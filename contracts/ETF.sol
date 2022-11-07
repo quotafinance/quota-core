@@ -3,6 +3,7 @@ pragma solidity 0.5.16;
 
 import "./interfaces/IRebaser.sol";
 import "./interfaces/INFT.sol";
+import "./interfaces/INFTFactoryOld.sol";
 import "./openzeppelin/SafeMath.sol";
 import "./openzeppelin/SafeERC20.sol";
 import "./openzeppelin/Address.sol";
@@ -44,6 +45,16 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
     );
     _;
   }
+
+  modifier onlyHandlers() {
+    
+    require(
+      INFTFactory(factory).isHandler(msg.sender) == true,
+      "not Handler"
+    );
+    _;
+  }
+
   modifier onlyEmergency() {
     require(
       msg.sender == guardian || msg.sender == gov,
@@ -99,7 +110,7 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
 
   /**
   * @notice Allows the pausing and unpausing of certain functions .
-  * @dev Limited to onlyMinter modifier
+  * @dev Limited to onlyEmergency modifier
   */
   function pause()
   public
@@ -158,7 +169,7 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
 
   function mintForReferral(address to, uint256 etfValue) // Mint with amount by underlying amount
   external
-  onlyMinter
+  onlyHandlers
   whenNotPaused
   returns (bool)
   {
@@ -481,11 +492,19 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
     guardian = guardian_;
     emit NewGuardian(oldGuardian, guardian_);
   }
+
   function _setRouter(address _router)
   external
   onlyEmergency
   {
     router = _router;
+  }
+
+  function _setFactory(address _factory)
+  external
+  onlyEmergency
+  {
+    factory = _factory;
   }
 
   function freezeTargetFunds(address target)

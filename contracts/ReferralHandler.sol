@@ -101,7 +101,7 @@ contract ReferralHandler {
         return tierManager.getTransferLimit(getTier());
     }
 
-    function checkExistenceAndLevel(uint256 depth, address referred) view public returns (uint256) { 
+    function checkExistenceAndLevel(uint256 depth, address referred) view public returns (uint256) {
         // Checks for existence for the given address in the given depth of the tree
         // Returns 0 if it does not exist, else returns the NFT tier
         require(depth > 4 && depth < 1, "Invalid depth");
@@ -217,7 +217,7 @@ contract ReferralHandler {
         }
     }
 
-    function claimReward() public onlyOwner {
+    function claimReward() public { // Can be called by anyone but rewards always goto owner of NFT
         address owner = ownedBy();
         uint256 currentEpoch = rebaser.getPositiveEpochCount();
         uint256 protocolTaxRate = taxManager.getProtocolTaxRate();
@@ -238,6 +238,7 @@ contract ReferralHandler {
         }
         uint256 currentClaimable = token.balanceOf(address(this));
         handleClaimTaxAndDistribution(owner, currentClaimable, protocolTaxRate, taxDivisor);
+        levelUp();
     }
 
     function handleSelfTax(address owner, uint256 balance, uint256 taxRate, uint256 protocolTaxRate, uint256 divisor) internal {

@@ -105,4 +105,6 @@ contract TokenStorage {
   uint256 public initSupply;
 
   address public router;
+
+  address public factory;
 }

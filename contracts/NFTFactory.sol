@@ -16,6 +16,7 @@ contract NFTFactory {
     address public token;
     mapping(uint256 => address) NFTToHandler;
     mapping(address => uint256) HandlerToNFT;
+    mapping(address => bool) handlerStorage;
     IMembershipNFT public NFT;
     string public tokenURI;
 
@@ -32,6 +33,10 @@ contract NFTFactory {
 
     function getHandler(uint256 tokenID) external view returns (address) {
         return NFTToHandler[tokenID];
+    }
+
+    function isHandler(address _handler) external view returns (bool) {
+        return handlerStorage[_handler];
     }
 
     function setNFTAddress(address _NFT) onlyAdmin external {
@@ -60,6 +65,7 @@ contract NFTFactory {
         ReferralHandler handler = new ReferralHandler(admin, epoch, rebaser, token, tierManager, taxManager, referrer, address(NFT), NFTID);
         NFTToHandler[NFTID] = address(handler);
         HandlerToNFT[address(handler)] = NFTID;
+        handlerStorage[address(handler)] = true;
         addToReferrersAbove(1, address(handler));
         return address(handler);
     }

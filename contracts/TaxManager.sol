@@ -128,6 +128,13 @@ contract TaxManager {
         referralRate[depth][tier] = _referralRate;
     }
 
+    function setBulkReferralRate(uint256 tier, uint256[] memory rates) external {
+        require(rates.length == 4, "Must have taxes for all 4 depths");
+        for (uint256 i = 0; i < rates.length; i++) {
+            referralRate[i+1][tier] = rates[i];
+        }
+    }
+
     function getReferralRate(uint256 depth, uint256 tier) external view returns (uint256) {
         return referralRate[depth][tier];
     }
