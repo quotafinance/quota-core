@@ -47,7 +47,6 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
   }
 
   modifier onlyHandlers() {
-    
     require(
       INFTFactory(factory).isHandler(msg.sender) == true,
       "not Handler"
@@ -201,7 +200,7 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
   function burn(uint256 amount)
   external
   returns (bool)
-  { 
+  {
     _burn(msg.sender, amount);
     return true;
   }
@@ -238,7 +237,7 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
     address sender,
     uint256 amount,
     uint256 balance
-  ) 
+  )
   internal
   {
     if(_checkForStaleData(sender, block.timestamp)) {
@@ -260,7 +259,7 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
   function updateTransferLimit(address sender, address to, uint256 amount) internal {
     uint256 previousTransfers;
     uint256 balanceOnFirstTransfer;
-    
+
     if(_checkForStaleData(sender, block.timestamp)) {
       previousTransfers = 0;
       balanceOnFirstTransfer = 0;
@@ -277,7 +276,7 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
       // On Add liquidity, msg.sender is router
       // On Remove liquidity sender is Trading pair
       // On Buy Token Sender is Trading pair
-      // On Sell Token Sender is User wallet and msg.sender is Trading pair, since it moves to other checks below 
+      // On Sell Token Sender is User wallet and msg.sender is Trading pair, since it moves to other checks below
     }
     else if(isWhitelisted(sender) || isWhitelisted(to) ) {
       // transferLimitPercent = 100;  Statement unrequired, only here for documentation
@@ -536,7 +535,7 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
   {
     _delistAccount(target);
   }
-  
+
   function addTradePair(address target)
   external
   onlyEmergency
@@ -686,7 +685,6 @@ contract ETF is ETFToken {
   public
   {
     super.initialize(name_, symbol_, decimals_);
-
     etfsScalingFactor = BASE;
     initSupply = fragmentToETF(initTotalSupply_);
     totalSupply = initTotalSupply_;

@@ -383,7 +383,7 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
         // Check that tokenId was not transferred by `_beforeTokenTransfer` hook
         require(ERC721.ownerOf(tokenId) == from, "ERC721: transfer from incorrect owner");
         require(_balances[to] == 0, "One address cannot have multiple tokens");
-        
+
         // Clear approvals from the previous owner
         delete _tokenApprovals[tokenId];
 

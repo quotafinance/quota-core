@@ -1,4 +1,4 @@
-//SPDX-License-Identifier: Unlicense
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 
 import "./interfaces/IMembershipNFT.sol";
@@ -293,7 +293,7 @@ contract ReferralHandler {
                 referral[3] = IReferralHandler(referral[2]).referredBy();
                 if(referral[3] != address(0)) {
                 // Block Scoping to reduce local Variables spillage
-                    {   
+                    {
                     uint256 thirdTier = IReferralHandler(referral[3]).getTier();
                     uint256 thirdRewardRate = taxManager.getReferralRate(3, thirdTier);
                     leftOverTaxRate = leftOverTaxRate.sub(thirdRewardRate);
@@ -302,7 +302,7 @@ contract ReferralHandler {
                     }
                     referral[4] = IReferralHandler(referral[3]).referredBy();
                     if(referral[4] != address(0)) {
-                        // Block Scoping to reduce local Variables spillage    
+                        // Block Scoping to reduce local Variables spillage
                         {
                         uint256 fourthTier = IReferralHandler(referral[4]).getTier();
                         uint256 fourthRewardRate = taxManager.getReferralRate(4, fourthTier);
@@ -328,14 +328,14 @@ contract ReferralHandler {
     function handleClaimTaxAndDistribution(address owner, uint256 currentClaimable, uint256 protocolTaxRate, uint256 taxDivisor) internal {
         uint256 leftOverTaxRate = protocolTaxRate;
         // User Distribution
-        // Block Scoping to reduce local Variables spillage    
-        {        
+        // Block Scoping to reduce local Variables spillage
+        {
         uint256 taxedAmount = currentClaimable.mul(protocolTaxRate).div(taxDivisor);
         uint256 userReward = currentClaimable.sub(taxedAmount);
         token.mintForReferral(owner, userReward);
         }
         // Staking pool allocation
-        // Block Scoping to reduce local Variables spillage    
+        // Block Scoping to reduce local Variables spillage
         {
         uint256 perpetualTaxRate = taxManager.getPerpetualPoolTaxRate();
         address stakingPool = taxManager.getPerpetualPool();
@@ -344,7 +344,7 @@ contract ReferralHandler {
         leftOverTaxRate = leftOverTaxRate.sub(perpetualTaxRate);
         }
         // Protocol Maintenance Allocation
-        // Block Scoping to reduce local Variables spillage    
+        // Block Scoping to reduce local Variables spillage
         {
         uint256 protocolMaintenanceRate = taxManager.getMaintenanceTaxRate();
         uint256 protocolMaintenanceAmount = currentClaimable.mul(protocolMaintenanceRate).div(taxDivisor);
@@ -353,7 +353,7 @@ contract ReferralHandler {
         leftOverTaxRate = leftOverTaxRate.sub(protocolMaintenanceRate);
         }
         // Dev pool and Reward Allocation pool
-        // Block Scoping to reduce local Variables spillage    
+        // Block Scoping to reduce local Variables spillage
         {
         uint256 leftOverTax = currentClaimable.mul(leftOverTaxRate).div(taxDivisor);
         address devPool = taxManager.getDevPool();

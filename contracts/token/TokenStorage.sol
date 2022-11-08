@@ -94,9 +94,9 @@ contract TokenStorage {
    * @notice Used for storing 24hr transfer data of users
    */
   mapping(address => uint256) public lastTransferTime;
-  
+
   mapping(address => uint256) public totalTrackedTransfer;
-  
+
   mapping(address => uint256) public balanceDuringCheckpoint;
 
   /**

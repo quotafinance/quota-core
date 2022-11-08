@@ -45,7 +45,7 @@ contract BasicRebaser {
   address public secondaryPool;
   address public governance;
 
-  uint256 public nextRebase = 0; // Wednesday November 25, 2020 09:00:00 (am) in time zone Asia/Seoul (KST) 
+  uint256 public nextRebase = 0; // Wednesday November 25, 2020 09:00:00 (am) in time zone Asia/Seoul (KST)
   uint256 public constant REBASE_DELAY = WINDOW_SIZE * 1 hours;
   IUniswapV2Pair public constant UNIPAIR = IUniswapV2Pair(0x95a5543111343aB2A66a06bc663a1170AcF050b9);
 

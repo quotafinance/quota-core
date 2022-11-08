@@ -1,4 +1,4 @@
-//SPDX-License-Identifier: Unlicense
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 import "./interfaces/IReferralHandler.sol";
 import "./interfaces/ICrytical.sol";
@@ -78,7 +78,7 @@ contract TierManager {
     function setTokenURI(uint256 tier, string memory _tokenURI) onlyAdmin public {
         tokenURI[tier] = _tokenURI;
     }
-    
+
     function getTokenURI(uint256 tier) public view returns (string memory) {
         return tokenURI[tier];
     }
