@@ -39,6 +39,9 @@ contract BasicRebaser {
   uint256 public counter = 0;
   uint256 public epoch = 1;
   uint256 public positiveEpochCount = 0;
+  uint256 public positiveRebaseLimit = 750; // 7.5% by default
+  uint256 public negativeRebaseLimit = 350; // 3.5% by default
+  uint256 public constant basisBase = 10000; // 100%
   ITaxManager public taxManager;
   mapping (uint256 => uint256) public rebaseBlockNumber;
   mapping (uint256 => uint256) public rebaseDelta;
@@ -84,6 +87,14 @@ contract BasicRebaser {
 
   function setSecondaryPool(address pool) external onlyGov {
     secondaryPool = pool;
+  }
+
+  function setRebaseLimit(uint256 _limit, bool positive) external onlyGov {
+    require(500 <= _limit && _limit <= 2500); // 5% to 25%
+      if(positive)
+        positiveRebaseLimit = _limit;
+      else
+        negativeRebaseLimit = _limit;
   }
 
   function refereralReward(address _taxManager) external onlyGov {
@@ -179,6 +190,9 @@ contract BasicRebaser {
       uint256 realAdjustment = increase.mul(BASE).div(factor);
       uint256 currentSupply = IERC20(etf).totalSupply();
       uint256 desiredSupply = currentSupply.add(currentSupply.mul(realAdjustment).div(BASE));
+      uint256 upperLimit = currentSupply.mul(basisBase.add(positiveRebaseLimit)).div(basisBase);
+      if(desiredSupply > upperLimit) // Increase expected rebase is above the limit
+        desiredSupply = upperLimit;
       uint256 preTaxDelta = desiredSupply.mul(BASE).div(currentSupply).sub(BASE);
       positiveEpochCount++;
       rebaseBlockNumber[positiveEpochCount] = block.number;
@@ -214,7 +228,9 @@ contract BasicRebaser {
       uint256 realAdjustment = increase.mul(BASE).div(factor);
       uint256 currentSupply = IERC20(etf).totalSupply();
       uint256 desiredSupply = currentSupply.sub(currentSupply.mul(realAdjustment).div(BASE));
-
+      uint256 lowerLimit = currentSupply.mul(basisBase.sub(negativeRebaseLimit)).div(basisBase);
+      if(desiredSupply < lowerLimit) // Decrease expected rebase is below the limit
+        desiredSupply = lowerLimit;
       // Cannot overflow as desiredSupply < currentSupply
       // delta = 100 - (desiredSupply / currentSupply) * 100
       uint256 delta = uint256(BASE).sub(desiredSupply.mul(BASE).div(currentSupply));
