@@ -216,7 +216,8 @@ contract BasicRebaser {
         IERC20(etf).safeApprove(secondaryPool, secondaryPoolBudget);
         IPoolEscrow(secondaryPool).notifySecondaryTokens(secondaryPoolBudget);
       } else {
-        emit NoSecondaryMint();
+        address perpetualPool = taxManager.getPerpetualPool();
+        IETF(etf).mint(perpetualPool, secondaryPoolBudget);
       }
       UNIPAIR.sync();
       epoch++;

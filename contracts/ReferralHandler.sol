@@ -37,17 +37,17 @@ contract ReferralHandler {
     mapping (address => uint256) public third_level;
     mapping (address => uint256) public fourth_level;
 
-    modifier onlyAdmin() { // TODO: Change this to a list with ROLE library
+    modifier onlyAdmin() {
         require(msg.sender == admin, "only admin");
         _;
     }
 
-   modifier onlyOwner() { // TODO: Change this to a list with ROLE library
+    modifier onlyOwner() {
         require(msg.sender == ownedBy(), "only owner");
         _;
     }
 
-    modifier onlyFactory() { // TODO: Change this to a list with ROLE library
+    modifier onlyFactory() {
         require(msg.sender == factory, "only factory");
         _;
     }
@@ -206,10 +206,8 @@ contract ReferralHandler {
     }
 
     function levelUp() public {
-
         if(getTier() < 4 &&  canLevel == true && tierManager.checkTierUpgrade(getTierCounts()) == true)
         {
-
             updateReferrersAbove(tier.add(1));
             tier = tier.add(1);
             string memory tokenURI = tierManager.getTokenURI(getTier());
@@ -228,8 +226,7 @@ contract ReferralHandler {
             if(rebaseRate != 0) {
                 uint256 blockForRebase = rebaser.getBlockForPositiveEpoch(claimedEpoch.add(1));
                 uint256 balanceDuringRebase = token.getPriorBalance(owner, blockForRebase); // We deal only with underlying balances
-                uint256 selfTaxRate = taxManager.getSelfTaxRate();
-                handleSelfTax(owner, balanceDuringRebase, selfTaxRate, protocolTaxRate, taxDivisor);
+                handleSelfTax(owner, balanceDuringRebase, protocolTaxRate, taxDivisor);
                 uint256 rightUpTaxRate = taxManager.getRightUpTaxRate();
                 if(rightUpTaxRate != 0)
                     handleRightUpTax(owner, balanceDuringRebase, rightUpTaxRate, protocolTaxRate, taxDivisor);
@@ -241,8 +238,9 @@ contract ReferralHandler {
         levelUp();
     }
 
-    function handleSelfTax(address owner, uint256 balance, uint256 taxRate, uint256 protocolTaxRate, uint256 divisor) internal {
-        uint256 taxedAmountReward = balance.mul(taxRate).div(divisor);
+    function handleSelfTax(address owner, uint256 balance, uint256 protocolTaxRate, uint256 divisor) internal {
+        uint256 selfTaxRate = taxManager.getSelfTaxRate();
+        uint256 taxedAmountReward = balance.mul(selfTaxRate).div(divisor);
         uint256 protocolTaxed = taxedAmountReward.mul(protocolTaxRate).div(divisor);
         uint256 reward = taxedAmountReward.sub(protocolTaxed);
         token.mintForReferral(owner, reward);
@@ -332,7 +330,7 @@ contract ReferralHandler {
         {
         uint256 taxedAmount = currentClaimable.mul(protocolTaxRate).div(taxDivisor);
         uint256 userReward = currentClaimable.sub(taxedAmount);
-        token.mintForReferral(owner, userReward);
+        token.transferForRewards(owner, userReward);
         }
         // Staking pool allocation
         // Block Scoping to reduce local Variables spillage
@@ -340,7 +338,7 @@ contract ReferralHandler {
         uint256 perpetualTaxRate = taxManager.getPerpetualPoolTaxRate();
         address stakingPool = taxManager.getPerpetualPool();
         uint256 stakingAllocation = currentClaimable.mul(perpetualTaxRate).div(taxDivisor);
-        token.mintForReferral(stakingPool, stakingAllocation);
+        token.transferForRewards(stakingPool, stakingAllocation);
         leftOverTaxRate = leftOverTaxRate.sub(perpetualTaxRate);
         }
         // Protocol Maintenance Allocation
@@ -349,7 +347,7 @@ contract ReferralHandler {
         uint256 protocolMaintenanceRate = taxManager.getMaintenanceTaxRate();
         uint256 protocolMaintenanceAmount = currentClaimable.mul(protocolMaintenanceRate).div(taxDivisor);
         address maintenancePool = taxManager.getMaintenancePool();
-        token.mintForReferral(maintenancePool, protocolMaintenanceAmount);
+        token.transferForRewards(maintenancePool, protocolMaintenanceAmount);
         leftOverTaxRate = leftOverTaxRate.sub(protocolMaintenanceRate);
         }
         // Dev pool and Reward Allocation pool
@@ -358,8 +356,8 @@ contract ReferralHandler {
         uint256 leftOverTax = currentClaimable.mul(leftOverTaxRate).div(taxDivisor);
         address devPool = taxManager.getDevPool();
         address rewardPool = taxManager.getRewardAllocationPool();
-        token.mintForReferral(devPool, leftOverTax.div(2));
-        token.mintForReferral(rewardPool, leftOverTax.div(2));
+        token.transferForRewards(devPool, leftOverTax.div(2));
+        token.transferForRewards(rewardPool, leftOverTax.div(2));
         }
     }
 }

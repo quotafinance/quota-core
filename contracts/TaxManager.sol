@@ -9,20 +9,27 @@ contract TaxManager {
     address public devPool;
     address public rewardAllocationPool;
     address public perpetualPool;
+    address public tierPool;
+    address public revenuePool;
     address public admin;
+
     uint256 public selfTaxRate;
     uint256 public rightUpTaxRate;
     uint256 public maintenanceTaxRate;
     uint256 public protocolTaxRate;
     uint256 public perpetualPoolTaxRate;
-    uint256 public taxBaseDivisor;
+    uint256 public devPoolTaxRate;
+    uint256 public rewardPoolTaxRate;
+    uint256 public constant taxBaseDivisor = 10000;
     uint256[][] public referralRate;
+    uint256 public tierPoolRate;
 
     modifier onlyAdmin() { // Change this to a list with ROLE library
         require(msg.sender == admin, "only admin");
         _;
     }
 
+    // Getters and setters for Addresses
 
     function setSelfTaxPool(address _selfTaxPool) external {
         selfTaxPool = _selfTaxPool;
@@ -72,6 +79,25 @@ contract TaxManager {
         return perpetualPool;
     }
 
+    function setTierPool(address _tierPool) external {
+        tierPool = _tierPool;
+    }
+
+    function getTierPool() external view returns (address) {
+        return tierPool;
+    }
+
+    function setRevenuePool(address _revenuePool) external {
+        revenuePool = _revenuePool;
+    }
+
+    function getRevenuePool() external view returns (address) {
+        return revenuePool;
+    }
+
+
+    // Getters and setters for the Tax Rates
+
     function setSelfTaxRate(uint256 _selfTaxRate) external {
         selfTaxRate = _selfTaxRate;
     }
@@ -116,11 +142,7 @@ contract TaxManager {
         return perpetualPoolTaxRate;
     }
 
-    function setTaxBaseDivisor(uint256 _taxBaseDivisor) external {
-        taxBaseDivisor = _taxBaseDivisor;
-    }
-
-    function getTaxBaseDivisor() external view returns (uint256) {
+    function getTaxBaseDivisor() external pure returns (uint256) {
         return taxBaseDivisor;
     }
 
@@ -138,6 +160,30 @@ contract TaxManager {
     function getReferralRate(uint256 depth, uint256 tier) external view returns (uint256) {
         return referralRate[depth][tier];
     }
+
+    function setDevPoolRate(uint256 _devPoolRate) external {
+        devPoolTaxRate = _devPoolRate;
+    }
+
+    function getDevPoolRate() external view returns (uint256) {
+        return devPoolTaxRate;
+    }
+
+    function setRewardPoolRate(uint256 _rewardPoolRate) external {
+        rewardPoolTaxRate = _rewardPoolRate;
+    }
+
+    function getRewardPoolRate() external view returns (uint256) {
+        return rewardPoolTaxRate;
+    }
+
+
+    function setTierPoolRate(uint256 _tierPoolRate) external {
+        tierPoolRate = _tierPoolRate;
+    }
+
+    function getTierPoolRate() external view returns (uint256) {
+        return tierPoolRate;
+    }
+
 }
-
-

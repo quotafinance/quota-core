@@ -25,10 +25,10 @@ contract StakingFactory {
         owner = msg.sender;
     }
 
-    function initialize (address lp) public {
-        address escrowToken = address(new EscrowToken());
+    function initialize (address lp, uint256 amount) public {
+        address escrowToken = address(new EscrowToken(amount));
         address stakingPool = address(new TokenRewards(escrowToken, lp));
-        IERC20(escrowToken).transfer(stakingPool, 30000000 * 1e18);
+        IERC20(escrowToken).transfer(stakingPool, amount * 1e18);
         address poolEscrow = address(new PoolEscrow(escrowToken, stakingPool, token, dev, gov, dao));
         TokenRewards(stakingPool).setEscrow(poolEscrow);
         TokenRewards(stakingPool).setRewardDistribution(notifier);

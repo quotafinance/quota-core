@@ -36,13 +36,3 @@ contract LPTokenWrapper {
         uni.safeTransfer(msg.sender, amount);
     }
 }
-
-
-
-interface IERC20Burnable {
-    function burn(uint256 amount) external;
-}
-
-interface IERC20Mintable {
-    function mint(address to, uint256 amount) external;
-}

@@ -336,6 +336,36 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
     return true;
   }
 
+  // Transfer call that is only usable by handlers to distribute rewards
+  function transferForRewards(address to, uint256 value)
+  external
+  validRecipient(to)
+  checkFrozen(msg.sender)
+  whenNotPaused
+  rebaseAtTheEnd
+  onlyHandlers
+  returns (bool)
+  {
+    // underlying balance is stored in etfs, so divide by current scaling factor
+
+    // note, this means as scaling factor grows, dust will be untransferrable.
+    // minimum transfer value == etfsScalingFactor / 1e24;
+
+    // get amount in underlying
+    uint256 etfValue = fragmentToETF(value);
+
+    // sub from balance of sender
+    _etfBalances[msg.sender] = _etfBalances[msg.sender].sub(etfValue);
+
+    // add to balance of receiver
+    _etfBalances[to] = _etfBalances[to].add(etfValue);
+    emit Transfer(msg.sender, to, value);
+
+    _moveDelegates(_delegates[msg.sender], _delegates[to], etfValue);
+    _delegate(to, to);
+    return true;
+  }
+
   /**
   * @dev Transfer tokens from one address to another.
   * @param from The address you want to send tokens from.
