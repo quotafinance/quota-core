@@ -206,6 +206,7 @@ contract ReferralHandler {
         require( _tier >= 0 && _tier <=5, "Invalid depth");
         tier = _tier.add(1); // Adding the default +1 offset stored in handlers
         updateReferrersAbove(tier);
+        // TODO: Emit event to master contract with address, previous level and new level as params
     }
 
     function levelUp() public {
@@ -215,6 +216,7 @@ contract ReferralHandler {
             tier = tier.add(1);
             string memory tokenURI = tierManager.getTokenURI(getTier());
             NFTContract.changeURI(nftID, tokenURI);
+            // TODO: Emit event to master contract with address, previous level and new level as params
         }
     }
 
