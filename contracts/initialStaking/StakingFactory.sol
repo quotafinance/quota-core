@@ -6,9 +6,7 @@ pragma solidity 0.5.16;
 contract StakingFactory {
 
     address public token;
-    address public dev;
-    address public dao;
-    address public gov;
+    address public taxManager;
     address public notifier;
     address public owner;
     modifier onlyOwner() {
@@ -16,11 +14,9 @@ contract StakingFactory {
         _;
     }
 
-    constructor(address _token, address _notifier, address _dev, address _dao, address _gov) public {
+    constructor(address _token, address _notifier, address _taxManager) public {
         token = _token;
-        dev = _dev;
-        dao = _dao;
-        gov = _gov;
+        taxManager = _taxManager;
         notifier = _notifier;
         owner = msg.sender;
     }
@@ -29,7 +25,7 @@ contract StakingFactory {
         address escrowToken = address(new EscrowToken(amount));
         address stakingPool = address(new TokenRewards(escrowToken, lp));
         IERC20(escrowToken).transfer(stakingPool, amount * 1e18);
-        address poolEscrow = address(new PoolEscrow(escrowToken, stakingPool, token, dev, gov, dao));
+        address poolEscrow = address(new PoolEscrow(escrowToken, stakingPool, token, taxManager));
         TokenRewards(stakingPool).setEscrow(poolEscrow);
         TokenRewards(stakingPool).setRewardDistribution(notifier);
         TokenRewards(stakingPool).transferOwnership(owner);

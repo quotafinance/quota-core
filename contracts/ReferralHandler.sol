@@ -52,6 +52,9 @@ contract ReferralHandler {
         _;
     }
 
+    event SelfTaxRewarded(address indexed NFT, uint256 amount, uint256 timestamp);
+    event RewardClaimed(address indexed NFT,uint256 amount,uint256 timestamp);
+
     constructor(
         address _admin,
         uint256 _epoch,
@@ -229,7 +232,7 @@ contract ReferralHandler {
                 handleSelfTax(owner, balanceDuringRebase, protocolTaxRate, taxDivisor);
                 uint256 rightUpTaxRate = taxManager.getRightUpTaxRate();
                 if(rightUpTaxRate != 0)
-                    handleRightUpTax(owner, balanceDuringRebase, rightUpTaxRate, protocolTaxRate, taxDivisor);
+                    handleRightUpTax(balanceDuringRebase, rightUpTaxRate, protocolTaxRate, taxDivisor);
                 rewardReferrers(balanceDuringRebase, protocolTaxRate, taxDivisor);
             }
         }
@@ -244,14 +247,17 @@ contract ReferralHandler {
         uint256 protocolTaxed = taxedAmountReward.mul(protocolTaxRate).div(divisor);
         uint256 reward = taxedAmountReward.sub(protocolTaxed);
         token.mintForReferral(owner, reward);
+        emit SelfTaxRewarded(address(this), reward, block.timestamp);
         token.mintForReferral(taxManager.getSelfTaxPool(), protocolTaxed);
     }
 
-    function handleRightUpTax(address owner, uint256 balance, uint256 taxRate, uint256 protocolTaxRate,  uint256 divisor) internal {
+    function handleRightUpTax(uint256 balance, uint256 taxRate, uint256 protocolTaxRate,  uint256 divisor) internal {
+        address _handler = address(this);
         uint256 taxedAmountReward = balance.mul(taxRate).div(divisor);
         uint256 protocolTaxed = taxedAmountReward.mul(protocolTaxRate).div(divisor);
         uint256 reward = taxedAmountReward.sub(protocolTaxed);
-        token.mintForReferral(owner, reward);
+        address referrer =  IReferralHandler(_handler).referredBy();
+        token.mintForReferral(referrer, reward);
         token.mintForReferral(taxManager.getRightUpTaxPool(), protocolTaxed);
     }
 
@@ -331,6 +337,7 @@ contract ReferralHandler {
         uint256 taxedAmount = currentClaimable.mul(protocolTaxRate).div(taxDivisor);
         uint256 userReward = currentClaimable.sub(taxedAmount);
         token.transferForRewards(owner, userReward);
+        emit RewardClaimed(address(this), userReward, block.timestamp);
         }
         // Staking pool allocation
         // Block Scoping to reduce local Variables spillage

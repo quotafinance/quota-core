@@ -24,6 +24,8 @@ contract PoolEscrow {
     address public governance;
     uint256 public lastMint;
 
+    event RewardClaimed(address indexed userNFT, uint256 amount, uint256 time);
+
     constructor(address _shareToken,
         address _pool,
         address _token,
@@ -51,6 +53,7 @@ contract PoolEscrow {
         distributeTax(reward, protocolTaxRate, taxDivisor);
         reward = reward.sub(totalTax);
         token.transfer(recipient, reward);
+        emit RewardClaimed(recipient, reward, block.timestamp);
         IERC20Burnable(shareToken).burn(shareAmount);
     }
 
@@ -73,6 +76,10 @@ contract PoolEscrow {
     }
 
     function distributeTax(uint256 balance ,uint256 protocolTaxRate, uint256 taxDivisor) internal {
+        /* TODO: CHANGE THE TAX for staking reward claim to same as normal AAS
+            Add events when claiming Rewards, staking and normal
+        */
+
         uint256 leftOverTaxRate = protocolTaxRate;
         {
         uint256 tierPoolTaxRate = taxManager.getTierPoolRate();
