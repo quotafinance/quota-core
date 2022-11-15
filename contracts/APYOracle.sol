@@ -127,10 +127,10 @@ contract ApyOracle {
     return prices;
   }
 
-  function batchTvl(address[] memory pool, address synd, bool isUniswap) public view returns (uint256[] memory){
+  function batchTvl(address[] memory pool, address token, bool isUniswap) public view returns (uint256[] memory){
     uint256[] memory tvl = new uint256[](pool.length);
     for(uint256 i = 0; i < pool.length; i++) {
-      tvl[i] = getTvl(pool[i], synd, isUniswap);
+      tvl[i] = getTvl(pool[i], token, isUniswap);
     }
     return tvl;
   }
@@ -138,13 +138,13 @@ contract ApyOracle {
   function batchAPY(
     address[] memory stakeTokens,
     bool isUni,
-    address synd,
+    address token,
     uint256 incentive,
     uint256 howManyWeeks,
     address[] memory pools) public view returns (uint256[] memory) {
     uint256[] memory apy =  new uint256[](stakeTokens.length);
     for(uint256 i = 0; i < stakeTokens.length; i++) {
-      apy[i] = getApy(stakeTokens[i], isUni, synd, incentive, howManyWeeks, pools[i]);
+      apy[i] = getApy(stakeTokens[i], isUni, token, incentive, howManyWeeks, pools[i]);
     }
     return apy;
   }
