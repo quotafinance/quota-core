@@ -20,6 +20,8 @@ contract NFTFactory {
     IMembershipNFT public NFT;
     string public tokenURI;
 
+    event LevelChange(address handler, uint256 oldTier, uint256 newTier);
+
     modifier onlyAdmin() { // Change this to a list with ROLE library
         require(msg.sender == admin, "only admin");
         _;
@@ -35,8 +37,13 @@ contract NFTFactory {
         return NFTToHandler[tokenID];
     }
 
-    function isHandler(address _handler) external view returns (bool) {
+    function isHandler(address _handler) public view returns (bool) {
         return handlerStorage[_handler];
+    }
+
+    function alertLevel(uint256 oldTier, uint256 newTier) external { // All the handlers notify the Factory incase there is a change in levels
+        require(isHandler(msg.sender) == true);
+        emit LevelChange(msg.sender, oldTier, newTier);
     }
 
     function setNFTAddress(address _NFT) onlyAdmin external {

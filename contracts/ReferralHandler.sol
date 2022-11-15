@@ -7,6 +7,7 @@ import "./interfaces/ITierManager.sol";
 import "./interfaces/IRebaserNew.sol";
 import "./interfaces/IETFNew.sol";
 import "./interfaces/ITaxManager.sol";
+import "./interfaces/INFTFactory.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 
@@ -204,19 +205,21 @@ contract ReferralHandler {
 
     function setTier(uint256 _tier) public onlyAdmin {
         require( _tier >= 0 && _tier <=5, "Invalid depth");
+        uint256 oldTier = getTier(); // For events
         tier = _tier.add(1); // Adding the default +1 offset stored in handlers
         updateReferrersAbove(tier);
-        // TODO: Emit event to master contract with address, previous level and new level as params
+        INFTFactory(factory).alertLevel(oldTier, getTier());
     }
 
     function levelUp() public {
         if(getTier() < 4 &&  canLevel == true && tierManager.checkTierUpgrade(getTierCounts()) == true)
         {
+            uint256 oldTier = getTier(); // For events
             updateReferrersAbove(tier.add(1));
             tier = tier.add(1);
             string memory tokenURI = tierManager.getTokenURI(getTier());
             NFTContract.changeURI(nftID, tokenURI);
-            // TODO: Emit event to master contract with address, previous level and new level as params
+            INFTFactory(factory).alertLevel(oldTier, getTier());
         }
     }
 
