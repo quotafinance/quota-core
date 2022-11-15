@@ -67,15 +67,24 @@ contract ApyOracle {
     uint256 total = 0;
     if (unipair.token0() == wNative) {
       total = uint256(r0) * 2;
-    } else {
-      total = uint256(r1) * 2;
-    }
-    uint256 singlePriceInWeth = 1e18 * total / unipair.totalSupply();
-    address[] memory p = new address[](2);
+      uint256 singlePriceInWeth = 1e18 * total / unipair.totalSupply();
+      address[] memory p = new address[](2);
     p[0] = wNative;
     p[1] = usdc;
     uint256[] memory prices = IUniswapRouterV2(router).getAmountsOut(1e18, p);
     return prices[1] * singlePriceInWeth / 1e18; // price of single token in USDC
+    } else {
+      total = uint256(r1) * 2;
+      address t1 = unipair.token1();
+      address[] memory p = new address[](3);
+      p[0] = t1;
+      p[1] = wNative;
+      p[2] = usdc;
+      uint256[] memory prices = IUniswapRouterV2(router).getAmountsOut(1e18, p);
+      uint256 tokenValue = prices[2] * total;
+      return tokenValue/unipair.totalSupply();
+    }
+
   }
 
   function getTvl(address pool, address token, bool isUniswap) public view returns (uint256) {
@@ -97,7 +106,6 @@ contract ApyOracle {
       return price * balance / (10 ** decimals);
     }
   }
-
   function tokenPerLP(address pool, address token) public view returns (uint256, bool) {
     // Incase tokenBalance is too small, we flip the equation to avoid 0
     uint256 tokenBalance = IERC20(token).balanceOf(pool);
@@ -109,5 +117,35 @@ contract ApyOracle {
         result = totalLP / tokenBalance;
         return (result, false);
     }
+  }
+
+  function batchUniPrices(address[] memory tokens) public view returns (uint256[] memory){
+    uint256[] memory prices = new uint256[](tokens.length);
+    for(uint256 i = 0; i < tokens.length; i++) {
+      prices[i] = getUniPrice(IUniswapV2Pair(tokens[i]));
+    }
+    return prices;
+  }
+
+  function batchTvl(address[] memory pool, address synd, bool isUniswap) public view returns (uint256[] memory){
+    uint256[] memory tvl = new uint256[](pool.length);
+    for(uint256 i = 0; i < pool.length; i++) {
+      tvl[i] = getTvl(pool[i], synd, isUniswap);
+    }
+    return tvl;
+  }
+
+  function batchAPY(
+    address[] memory stakeTokens,
+    bool isUni,
+    address synd,
+    uint256 incentive,
+    uint256 howManyWeeks,
+    address[] memory pools) public view returns (uint256[] memory) {
+    uint256[] memory apy =  new uint256[](stakeTokens.length);
+    for(uint256 i = 0; i < stakeTokens.length; i++) {
+      apy[i] = getApy(stakeTokens[i], isUni, synd, incentive, howManyWeeks, pools[i]);
+    }
+    return apy;
   }
 }
