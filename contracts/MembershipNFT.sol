@@ -62,7 +62,6 @@ contract MembershipNFT is ERC721URIStorage {
     {
         address handler = INFTFactory(factory).getHandler(tokenID);
         return IReferralHandler(handler).getTransferLimit();
-
     }
 
 }

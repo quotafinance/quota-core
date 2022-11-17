@@ -18,7 +18,7 @@ contract ApyOracle {
 
   address public router;
   address public usdc;
-  address public wNative;
+  address public wNative; // This is address for wrapped native token of the ecosystem
 
   constructor (address _router, address _usdc, address _wNative) public {
     router = _router;
@@ -30,7 +30,7 @@ contract ApyOracle {
     address stakeToken,
     bool isUni,
     address token,
-    uint256 incentive,
+    uint256 incentive, // amount of token loaded into the contract
     uint256 howManyWeeks,
     address pool) public view returns (uint256) {
     address[] memory p = new address[](3);

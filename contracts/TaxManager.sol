@@ -11,6 +11,7 @@ contract TaxManager {
     address public perpetualPool;
     address public tierPool;
     address public revenuePool;
+    address public marketingPool;
     address public admin;
 
     uint256 public selfTaxRate;
@@ -85,6 +86,14 @@ contract TaxManager {
 
     function getTierPool() external view returns (address) {
         return tierPool;
+    }
+
+    function setMarketingPool(address _marketingPool) external {
+        marketingPool = _marketingPool;
+    }
+
+    function getMarketingPool() external view returns (address) {
+        return marketingPool;
     }
 
     function setRevenuePool(address _revenuePool) external {

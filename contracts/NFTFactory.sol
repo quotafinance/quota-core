@@ -3,6 +3,7 @@ pragma solidity 0.8.4;
 
 import "./interfaces/IMembershipNFT.sol";
 import "./ReferralHandler.sol";
+import "./DepositBox.sol";
 import "./interfaces/ITierManager.sol";
 import "./interfaces/IRebaserNew.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -16,11 +17,15 @@ contract NFTFactory {
     address public token;
     mapping(uint256 => address) NFTToHandler;
     mapping(address => uint256) HandlerToNFT;
+    mapping(uint256 => address) NFTToDepositBox;
     mapping(address => bool) handlerStorage;
     IMembershipNFT public NFT;
     string public tokenURI;
 
+    event NewIssuance(uint256 id, address handler, address depositBox);
     event LevelChange(address handler, uint256 oldTier, uint256 newTier);
+    event SelfTaxClaimed(address indexed handler, uint256 amount, uint256 timestamp);
+    event RewardClaimed(address indexed handler, uint256 amount, uint256 timestamp);
 
     modifier onlyAdmin() { // Change this to a list with ROLE library
         require(msg.sender == admin, "only admin");
@@ -46,6 +51,17 @@ contract NFTFactory {
         emit LevelChange(msg.sender, oldTier, newTier);
     }
 
+
+    function alertSelfTaxClaimed(uint256 amount, uint256 timestamp) external { // All the handlers notify the Factory when the claim self tax
+        require(isHandler(msg.sender) == true);
+        emit SelfTaxClaimed(msg.sender, amount, timestamp);
+    }
+
+    function alertReferralClaimed(uint256 amount, uint256 timestamp) external { // All the handlers notify the Factory when the claim referral Reward
+        require(isHandler(msg.sender) == true);
+        emit RewardClaimed(msg.sender, amount, timestamp);
+    }
+
     function setNFTAddress(address _NFT) onlyAdmin external {
         NFT = IMembershipNFT(_NFT); // Set address of the NFT contract
     }
@@ -54,26 +70,51 @@ contract NFTFactory {
         tokenURI = _tokenURI;
     }
 
+    function getRebaser() external view returns(address) {
+        return rebaser;  // Get address of the Rebaser contract
+    }
+
+    function getToken()  external view returns(address){
+        return token ; // Set address of the Token contract
+    }
+
+    function getTaxManager() external view returns(address) {
+        return taxManager;
+    }
+
+    function getTierManager() external view returns(address) {
+        return tierManager;
+    }
+
+
     function setRebaser(address _rebaser) onlyAdmin external {
         rebaser = _rebaser; // Set address of the Rebaser contract
     }
 
     function setToken(address _token) onlyAdmin external {
-        token = _token; // Set address of the Rebaser contract
+        token = _token; // Set address of the Token contract
     }
 
     function setTaxManager(address _taxManager) onlyAdmin external {
         taxManager = _taxManager;
     }
 
+    function setTierManager(address _tierManager) onlyAdmin external {
+        tierManager = _tierManager;
+    }
+
     function mint(address referrer) onlyAdmin external returns (address) { //Referrer is address of NFT handler of the guy above
-        uint256 NFTID = NFT.issueNFT(msg.sender, tokenURI);
+        uint256 nftID = NFT.issueNFT(msg.sender, tokenURI);
         uint256 epoch = IRebaser(rebaser).getPositiveEpochCount();
-        ReferralHandler handler = new ReferralHandler(admin, epoch, rebaser, token, tierManager, taxManager, referrer, address(NFT), NFTID);
-        NFTToHandler[NFTID] = address(handler);
-        HandlerToNFT[address(handler)] = NFTID;
+        ReferralHandler handler = new ReferralHandler(admin, epoch, referrer, token, address(NFT), nftID);
+        DepositBox depositBox = new DepositBox(address(handler), nftID, token);
+        handler.setDepositBox(address(depositBox));
+        NFTToHandler[nftID] = address(handler);
+        NFTToDepositBox[nftID] = address(depositBox);
+        HandlerToNFT[address(handler)] = nftID;
         handlerStorage[address(handler)] = true;
         addToReferrersAbove(1, address(handler));
+        emit NewIssuance(nftID, address(handler), address(depositBox));
         return address(handler);
     }
 
