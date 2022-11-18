@@ -39,6 +39,13 @@ contract NFTFactory {
         tokenURI = _tokenURI;
     }
 
+    function getHandlerForUser(address user) external view returns (address) {
+        uint256 tokenID = NFT.belongsTo(user);
+        if(tokenID != 0) // Incase user holds no NFT
+            return NFTToHandler[tokenID];
+        return address(0);
+    }
+
     function getHandler(uint256 tokenID) external view returns (address) {
         return NFTToHandler[tokenID];
     }
