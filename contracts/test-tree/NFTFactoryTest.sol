@@ -5,7 +5,7 @@ import "../interfaces/IMembershipNFT.sol";
 import "./ReferralHandlerTest.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-contract NFTFactory {
+contract NFTFactoryTest {
 
     address public admin;
     mapping(uint256 => address) NFTToHandler;
@@ -15,6 +15,7 @@ contract NFTFactory {
     string public defaultTokenURI;
     string[] public tokenURI;
 
+    event Mint(address handler, address owner, address referrer, uint256 tokenId);
     event LevelChange(address handler, uint256 oldTier, uint256 newTier);
 
     modifier onlyAdmin() { // Change this to a list with ROLE library
@@ -57,13 +58,14 @@ contract NFTFactory {
         defaultTokenURI = _tokenURI;
     }
 
-    function mint(address referrer) onlyAdmin external returns (address) { //Referrer is address of NFT handler of the guy above
+    function mint(address referrer) external returns (address) { //Referrer is address of NFT handler of the guy above
         uint256 NFTID = NFT.issueNFT(msg.sender, defaultTokenURI);
-        ReferralHandler handler = new ReferralHandler(admin, referrer, address(NFT), NFTID);
+        ReferralHandlerTest handler = new ReferralHandlerTest(admin, referrer, address(NFT), NFTID);
         NFTToHandler[NFTID] = address(handler);
         HandlerToNFT[address(handler)] = NFTID;
         handlerStorage[address(handler)] = true;
         addToReferrersAbove(1, address(handler));
+        emit Mint(address(handler), msg.sender, referrer, NFTID);
         return address(handler);
     }
 

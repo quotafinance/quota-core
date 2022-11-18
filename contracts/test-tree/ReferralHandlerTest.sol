@@ -7,7 +7,7 @@ import "./INFTFactoryTest.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 
-contract ReferralHandler {
+contract ReferralHandlerTest {
 
     using SafeMath for uint256;
     address public admin;
@@ -29,6 +29,23 @@ contract ReferralHandler {
     mapping (address => uint256) public second_level;
     mapping (address => uint256) public third_level;
     mapping (address => uint256) public fourth_level;
+
+    function getFirstLevelAddresses() external view returns(address[] memory) {
+        return firstLevelAddress;
+    }
+
+    function getSecondLevelAddresses() external view returns(address[] memory) {
+        return secondLevelAddress;
+    }
+
+    function getThirdLevelAddresses() external view returns(address[] memory) {
+        return thirdLevelAddress;
+    }
+
+    function getFourthLevelAddresses() external view returns(address[] memory) {
+        return fourthLevelAddress;
+    }
+
 
 
     modifier onlyAdmin() {
@@ -115,7 +132,7 @@ contract ReferralHandler {
     }
 
     function addToReferralTree(uint256 depth, address referred, uint256 NFTtier) public onlyFactory { // _referral address is address of the NFT handler not the new user
-        require(depth > 4, "Invalid depth");
+        require(depth <= 4, "Invalid depth");
         require(referred != address(0), "Invalid referred address");
         if (depth == 1) {
             firstLevelAddress.push(referred);
@@ -176,7 +193,7 @@ contract ReferralHandler {
     }
 
     function setTier(uint256 _tier) public onlyAdmin {
-        require( _tier >= 0 && _tier <=5, "Invalid depth");
+        require( _tier >= 0 && _tier <= 5, "Invalid depth");
         uint256 oldTier = getTier(); // For events
         tier = _tier.add(1); // Adding the default +1 offset stored in handlers
         updateReferrersAbove(tier);

@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "./INFTFactoryTest.sol";
 import "../interfaces/IReferralHandler.sol";
 
-contract MembershipNFT is ERC721URIStorage {
+contract MembershipNFTTest is ERC721URIStorage {
 
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
