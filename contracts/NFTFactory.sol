@@ -26,6 +26,7 @@ contract NFTFactory {
     event LevelChange(address handler, uint256 oldTier, uint256 newTier);
     event SelfTaxClaimed(address indexed handler, uint256 amount, uint256 timestamp);
     event RewardClaimed(address indexed handler, uint256 amount, uint256 timestamp);
+    event DepositClaimed(address  indexed handler, uint256 amount, uint256 timestamp);
 
     modifier onlyAdmin() { // Change this to a list with ROLE library
         require(msg.sender == admin, "only admin");
@@ -40,6 +41,10 @@ contract NFTFactory {
 
     function getHandler(uint256 tokenID) external view returns (address) {
         return NFTToHandler[tokenID];
+    }
+
+    function getDepositBox(uint256 tokenID) external view returns (address) {
+        return NFTToDepositBox[tokenID];
     }
 
     function isHandler(address _handler) public view returns (bool) {

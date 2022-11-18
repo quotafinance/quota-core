@@ -107,7 +107,7 @@ contract ApyOracle {
     }
   }
   function tokenPerLP(address pool, address token) public view returns (uint256, bool) {
-    // Incase tokenBalance is too small, we flip the equation to avoid 0
+    // Incase result is too small, we flip the equation to avoid 0
     uint256 tokenBalance = IERC20(token).balanceOf(pool);
     uint256 totalLP = IERC20(pool).totalSupply();
     uint256 result = tokenBalance / totalLP;
