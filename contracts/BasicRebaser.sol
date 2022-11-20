@@ -196,7 +196,6 @@ contract BasicRebaser {
       uint256 preTaxDelta = desiredSupply.mul(BASE).div(currentSupply).sub(BASE);
       positiveEpochCount++;
       rebaseBlockNumber[positiveEpochCount] = block.number;
-      rebaseDelta[positiveEpochCount] = preTaxDelta; // Record pre-tax delta, No epoch for neutral and we don't save negetive rebase delta (default 0)
       uint256 perpetualPoolTax = taxManager.getPerpetualPoolTaxRate();
       uint256 totalTax = taxManager.getTotalTaxAtMint();
       uint256 taxDivisor = taxManager.getTaxBaseDivisor();
@@ -207,6 +206,8 @@ contract BasicRebaser {
       // Cannot underflow as desiredSupply > currentSupply, the result is positive
       // delta = (desiredSupply / currentSupply) * 100 - 100
       uint256 delta = desiredSupply.mul(BASE).div(currentSupply).sub(BASE);
+      uint256 deltaDifference = preTaxDelta.sub(delta); // Percentage of delta reduced due to tax
+      rebaseDelta[positiveEpochCount] = deltaDifference; // Record pre-tax delta differemce, this is the amount of token in percent that needs to be minted for tax
       IETF(etf).rebase(epoch, delta, true);
 
       if (secondaryPool != address(0)) {

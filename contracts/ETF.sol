@@ -166,33 +166,14 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
     emit Transfer(address(0), to, amount);
   }
 
-  function mintForReferral(address to, uint256 etfValue) // Mint with amount by underlying amount
+  function mintForReferral(address to, uint256 amount)
   external
   onlyHandlers
   whenNotPaused
   returns (bool)
   {
-    // get amount
-    uint256 amount = etfToFragment(etfValue);
-
-    // increase totalSupply
-    totalSupply = totalSupply.add(amount);
-
-    // increase initSupply
-    initSupply = initSupply.add(etfValue);
-
-    // make sure the mint didnt push maxScalingFactor too low
-    require(etfsScalingFactor <= _maxScalingFactor(), "max scaling factor too low");
-
-    // add balance
-    _etfBalances[to] = _etfBalances[to].add(etfValue);
-
-    // add delegates to the minter
-    _moveDelegates(address(0), _delegates[to], etfValue);
-    _delegate(to, to);
-    emit Mint(to, amount);
-    emit Transfer(address(0), to, amount);
-
+    _mint(to, amount);
+    return true;
   }
   /**
   * @notice Burns tokens, decreasing totalSupply, initSupply, and a users balance.

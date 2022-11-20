@@ -9,6 +9,7 @@ interface ITaxManager {
     function getRewardAllocationPool() external view returns (address);
     function getPerpetualPool() external view returns (address);
     function getTierPool() external view returns (address);
+    function getMarketingPool() external view returns (address);
     function getRevenuePool() external view returns (address);
 
     function getSelfTaxRate() external returns (uint256);
@@ -22,6 +23,5 @@ interface ITaxManager {
     function getTierPoolRate() external view returns (uint256);
     function getDevPoolRate() external view returns (uint256);
     function getRewardPoolRate() external view returns (uint256);
-
 }
 

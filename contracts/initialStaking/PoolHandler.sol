@@ -4,6 +4,7 @@ pragma solidity 0.8.4;
 import "../interfaces/ITaxManager.sol";
 import "../interfaces/IRebaserNew.sol";
 import "../interfaces/IETFNew.sol";
+import "../interfaces/INFTFactory.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract PoolHandler {
@@ -12,9 +13,9 @@ contract PoolHandler {
     address public admin;
     address public factory;
     IETF public token;
-    ITaxManager public taxManager;
     IRebaser public rebaser;
     address public pool;
+    uint256 constant BASE = 10000;
     uint256 claimedEpoch; // Contructor sets the latest positive Epoch, to keep count of future epochs that need to be claimed
 
     constructor(
@@ -23,15 +24,14 @@ contract PoolHandler {
         address _rebaser,
         uint256 _epoch,
         address _token,
-        address _taxManager
+        address _factory
     ) {
         pool = _pool;
         admin = _admin;
         claimedEpoch = _epoch;
         rebaser = IRebaser(_rebaser);
         token = IETF(_token);
-        factory = msg.sender;
-        taxManager = ITaxManager(_taxManager);
+        factory = _factory;
     }
 
     function transferTax() external {
@@ -42,12 +42,15 @@ contract PoolHandler {
             if(rebaseRate != 0) {
                 uint256 blockForRebase = rebaser.getBlockForPositiveEpoch(claimedEpoch.add(1));
                 uint256 balanceDuringRebase = token.getPriorBalance(address(this), blockForRebase);
-                distributeTax(balanceDuringRebase);
+                uint256 expectedBalance = balanceDuringRebase.mul(BASE.add(rebaseRate)).div(BASE);
+                uint256 balanceToMint = expectedBalance.sub(balanceDuringRebase);
+                distributeTax(balanceToMint);
             }
         }
     }
 
     function distributeTax(uint256 balance) internal {
+        ITaxManager taxManager = ITaxManager(INFTFactory(factory).getTaxManager());
         uint256 leftOverTaxRate = taxManager.getProtocolTaxRate();
         uint256 taxDivisor = taxManager.getTaxBaseDivisor();
         // Tier Rewards Allocation
@@ -59,11 +62,9 @@ contract PoolHandler {
         leftOverTaxRate = leftOverTaxRate.sub(tierPoolTaxRate);
         }
         // Staking Pool Allocation
+        // Minted already during rebase
         {
         uint256 perpetualTaxRate = taxManager.getPerpetualPoolTaxRate();
-        address stakingPool = taxManager.getPerpetualPool();
-        uint256 stakingAllocation = balance.mul(perpetualTaxRate).div(taxDivisor);
-        token.mintForReferral(stakingPool, stakingAllocation);
         leftOverTaxRate = leftOverTaxRate.sub(perpetualTaxRate);
         }
         // Protocol Maintenance Allocation
@@ -90,11 +91,13 @@ contract PoolHandler {
         token.mintForReferral(rewardPool, rewardPoolAmount);
         leftOverTaxRate = leftOverTaxRate.sub(rewardTaxRate);
         }
-        // Revenue Allocation
+        // Revenue & Marketing Allocation
         {
         uint256 leftOverTax = balance.mul(leftOverTaxRate).div(taxDivisor);
         address revenuePool = taxManager.getRevenuePool();
-        token.transferForRewards(revenuePool, leftOverTax);
+        address marketingPool = taxManager.getMaintenancePool();
+        token.mintForReferral(revenuePool, leftOverTax/2);
+        token.mintForReferral(marketingPool, leftOverTax/2);
         }
     }
 }

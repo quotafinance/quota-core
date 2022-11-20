@@ -23,6 +23,5 @@ interface ITaxManager {
     function getTierPoolRate() external view returns (uint256);
     function getDevPoolRate() external view returns (uint256);
     function getRewardPoolRate() external view returns (uint256);
-
 }
 

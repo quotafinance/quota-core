@@ -30,7 +30,7 @@ contract DepositBox {
         return ITaxManager(taxManager);
     }
 
-    function claimReward() public { // Can be called by anyone but rewards always goto owner of NFT
+    function claimReward() public { // Can be called by anyone but rewards always goes owner of NFT
         address owner = ownedBy();
         uint256 currentClaimable = token.balanceOf(address(this));
         if (currentClaimable > 0)

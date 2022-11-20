@@ -18,6 +18,7 @@ contract ReferralHandler {
     IMembershipNFT public NFTContract;
     IETF public token;
     uint256 public nftID;
+    uint256 public mintTime;
     address public referredBy; // NFT address of the referrer's ID
     address[] public referrals;
     address public depositBox;
@@ -29,6 +30,7 @@ contract ReferralHandler {
     address[] public secondLevelAddress;
     address[] public thirdLevelAddress;
     address[] public fourthLevelAddress;
+    uint256 constant BASE = 10000;
     // Mapping of the above Address list and their corresponding NFT tiers
     mapping (address => uint256) public first_level;
     mapping (address => uint256) public second_level;
@@ -65,6 +67,7 @@ contract ReferralHandler {
         referredBy = _referredBy;
         NFTContract = IMembershipNFT(_nftAddress);
         nftID = _nftId;
+        mintTime = block.timestamp;
     }
 
     function ownedBy() public view returns (address) { // Returns the Owner of the NFT coupled with this handler
@@ -247,11 +250,13 @@ contract ReferralHandler {
             if(rebaseRate != 0) {
                 uint256 blockForRebase = getRebaser().getBlockForPositiveEpoch(claimedEpoch.add(1));
                 uint256 balanceDuringRebase = token.getPriorBalance(owner, blockForRebase); // We deal only with underlying balances
-                handleSelfTax(owner, balanceDuringRebase, protocolTaxRate, taxDivisor);
+                uint256 expectedBalance = balanceDuringRebase.mul(BASE.add(rebaseRate)).div(BASE);
+                uint256 balanceToMint = expectedBalance.sub(balanceDuringRebase);
+                handleSelfTax(owner, balanceToMint, protocolTaxRate, taxDivisor);
                 uint256 rightUpTaxRate = taxManager.getRightUpTaxRate();
                 if(rightUpTaxRate != 0)
-                    handleRightUpTax(balanceDuringRebase, rightUpTaxRate, protocolTaxRate, taxDivisor);
-                rewardReferrers(balanceDuringRebase, protocolTaxRate, taxDivisor);
+                    handleRightUpTax(balanceToMint, rightUpTaxRate, protocolTaxRate, taxDivisor);
+                rewardReferrers(balanceToMint, protocolTaxRate, taxDivisor);
             }
         }
         uint256 currentClaimable = token.balanceOf(address(this));
@@ -397,6 +402,12 @@ contract ReferralHandler {
         if(referral[1] != address(0)) {
             // Block Scoping to reduce local Variables spillage
             {
+            // Rightup Reward
+            uint256 rightUpRate = taxManager.getRightUpTaxRate();
+            uint256 rightUpAmount = currentClaimable.mul(rightUpRate).div(taxDivisor);
+            token.transferForRewards(referral[1], rightUpAmount);
+            leftOverTaxRate = leftOverTaxRate.sub(rightUpRate);
+            // Normal Referral Reward
             uint256 firstTier = IReferralHandler(referral[1]).getTier();
             uint256 firstRewardRate = taxManager.getReferralRate(1, firstTier);
             leftOverTaxRate = leftOverTaxRate.sub(firstRewardRate);

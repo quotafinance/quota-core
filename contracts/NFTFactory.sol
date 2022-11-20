@@ -58,6 +58,10 @@ contract NFTFactory {
         return handlerStorage[_handler];
     }
 
+    function addHandler(address _handler) public onlyAdmin { // For adding handlers for Staking pools and Protocol owned Pools
+        handlerStorage[_handler] = true;
+    }
+
     function alertLevel(uint256 oldTier, uint256 newTier) external { // All the handlers notify the Factory incase there is a change in levels
         require(isHandler(msg.sender) == true);
         emit LevelChange(msg.sender, oldTier, newTier);
@@ -115,9 +119,9 @@ contract NFTFactory {
         tierManager = _tierManager;
     }
 
-    function mint(address referrer) onlyAdmin external returns (address) { //Referrer is address of NFT handler of the guy above
+    function mint(address referrer) external returns (address) { //Referrer is address of NFT handler of the guy above
         uint256 nftID = NFT.issueNFT(msg.sender, tokenURI);
-        uint256 epoch = IRebaser(rebaser).getPositiveEpochCount();
+        uint256 epoch = IRebaser(rebaser).getPositiveEpochCount(); // The handlers need to only track positive rebases
         ReferralHandler handler = new ReferralHandler(admin, epoch, referrer, token, address(NFT), nftID);
         DepositBox depositBox = new DepositBox(address(handler), nftID, token);
         handler.setDepositBox(address(depositBox));
