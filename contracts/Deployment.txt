@@ -1,3 +1,0 @@
-Pool Handlers and Escrow handlers need to be manually added to NFTFactory contract
-Staking:
-Use Staking Factory to deploy, then use notifier to start the staking period.
