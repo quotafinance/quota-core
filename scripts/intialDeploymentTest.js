@@ -55,6 +55,14 @@ async function main() {
   console.log("Price of SNP", await rebaser.getPriceSNP());
   // End of Test only
 
+  // For Mainnet
+  // const Rebaser = await hre.ethers.getContractFactory("Rebaser");
+  // // The mainnet oracle address: 0x187c42f6C0e7395AeA00B1B30CB0fF807ef86d5d
+  // const rebaser = await Rebaser.deploy(etf.address, zeroAddress, "0x187c42f6C0e7395AeA00B1B30CB0fF807ef86d5d", taxmanager.address);
+  // await rebaser.deployed();
+  // console.log("Implementation of Rebaser deployed to:", rebaser.address);
+  // console.log("Price of SNP", await rebaser.getPriceSNP());
+
   await etf._setRebaser(rebaser.address);
   console.log("Rebaser set to:", rebaser.address);
 

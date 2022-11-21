@@ -57,7 +57,7 @@ contract StakingPoolAggregator {
         return false;
     }
 
-    function getStakedLPForDuration(address pool, address user, uint256 stakedDuration) internal view returns (uint256) {
+    function getStakedLPForDuration(address pool, address user, uint256 stakedDuration) public view returns (uint256) {
         if(stakedDuration <= ITokenRewards(pool).latestLockDuration(user)) {
             return ITokenRewards(pool).balanceOf(user);
         }
