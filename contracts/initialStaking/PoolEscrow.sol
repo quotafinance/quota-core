@@ -31,16 +31,15 @@ contract PoolEscrow {
     constructor(address _shareToken,
         address _pool,
         address _token,
-        address _governance,
         address _factory) public {
         shareToken = _shareToken;
         pool = _pool;
         token = IETF(_token);
         factory = _factory;
-        governance = _governance;
+        governance = msg.sender;
     }
 
-    function setGovernance(address account) external  {
+    function setGovernance(address account) external onlyGov {
         governance = account;
     }
 
