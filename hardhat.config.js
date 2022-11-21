@@ -4,15 +4,10 @@ require('@openzeppelin/hardhat-upgrades');
 require('hardhat-contract-sizer');
 require("hardhat-laika");
 
+require('dotenv').config()
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
-
-// const data = require("./secrets.json");
-// var null
-// const INFURA_API_KEY = data.INFURA_API_KEY;
-// const ROPSTEN_PRIVATE_KEY = data.ROPSTEN_PRIVATE_KEY;
-// const ETHERSCAN_KEY = data.ETHERSCAN_KEY;
 
 task("accounts", "Prints the list of accounts", async () => {
   const accounts = await ethers.getSigners();
@@ -67,19 +62,12 @@ module.exports = {
       },
       blockGasLimit: 12000000,
     },
-    // ropsten: {
-    //   url: `https://ropsten.infura.io/v3/${INFURA_API_KEY}`,
-    //   accounts: [`${ROPSTEN_PRIVATE_KEY}`],
-    // },
-    // rinkeby: {
-    //   url: `https://rinkeby.infura.io/v3/${INFURA_API_KEY}`,
-    //   accounts: [`${ROPSTEN_PRIVATE_KEY}`],
-    // },
-    matic: {
-      url: "https://rpc-mumbai.maticvigil.com",
-      accounts: ['2640d59ab03e3dbcda0a9ce4a5b255bbfdd42af9172f12c3d04b0ddf145b1095'],
-    },
+    mumbai: {
+      url: `https://rpc-mumbai.maticvigil.com`,
+      accounts: [process.env.PRIVATE_KEY, process.env.PRIVATE_KEY1, process.env.PRIVATE_KEY2],
+    }
   },
   etherscan: {
+    apiKey: process.env.POLYGONSCAN_KEY,
   },
 };
