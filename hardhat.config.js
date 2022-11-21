@@ -62,12 +62,16 @@ module.exports = {
       },
       blockGasLimit: 12000000,
     },
-    mumbai: {
-      url: `https://rpc-mumbai.maticvigil.com`,
-      accounts: [process.env.PRIVATE_KEY, process.env.PRIVATE_KEY1, process.env.PRIVATE_KEY2],
-    }
+    ropsten: {
+      url: `https://ropsten.infura.io/v3/${INFURA_API_KEY}`,
+      accounts: [`${ROPSTEN_PRIVATE_KEY}`],
+    },
+    rinkeby: {
+      url: `https://rinkeby.infura.io/v3/${INFURA_API_KEY}`,
+      accounts: [`${ROPSTEN_PRIVATE_KEY}`],
+    },
   },
   etherscan: {
-    apiKey: process.env.POLYGONSCAN_KEY,
+    apiKey: ETHERSCAN_KEY,
   },
 };

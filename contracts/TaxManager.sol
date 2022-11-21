@@ -22,7 +22,13 @@ contract TaxManager {
     uint256 public devPoolTaxRate;
     uint256 public rewardPoolTaxRate;
     uint256 public constant taxBaseDivisor = 10000;
-    uint256[][] public referralRate;
+    struct TaxRates {
+        uint256 first;
+        uint256 second;
+        uint256 third;
+        uint256 fourth;
+    }
+    mapping(uint256 => TaxRates) referralRate;
     uint256 public tierPoolRate;
 
     modifier onlyAdmin() { // Change this to a list with ROLE library
@@ -155,22 +161,27 @@ contract TaxManager {
         return taxBaseDivisor;
     }
 
-    function setReferralRate(uint256 depth, uint256 tier, uint256 _referralRate) external {
-        referralRate[depth][tier] = _referralRate;
-    }
-
-    function setBulkReferralRate(uint256 tier, uint256[] memory rates) external {
-        require(rates.length == 4, "Must have taxes for all 4 depths");
-        for (uint256 i = 0; i < rates.length; i++) {
-            referralRate[i+1][tier] = rates[i];
-        }
+    function setBulkReferralRate(uint256 tier, uint256 first, uint256 second, uint256 third, uint256 fourth) external {
+        referralRate[tier].first = first;
+        referralRate[tier].second = second;
+        referralRate[tier].third = third;
+        referralRate[tier].fourth = fourth;
     }
 
     function getReferralRate(uint256 depth, uint256 tier) external view returns (uint256) {
-        return referralRate[depth][tier];
+        if (depth == 1) {
+            return referralRate[tier].first;
+        } else if (depth == 2) {
+            return referralRate[tier].second;
+        } else if (depth == 3) {
+            return referralRate[tier].third;
+        } else if (depth == 4) {
+            return referralRate[tier].fourth;
+        }
+        return 0;
     }
 
-    function setDevPoolRate(uint256 _devPoolRate) external {
+    function setDevPoolTaxRate(uint256 _devPoolRate) external {
         devPoolTaxRate = _devPoolRate;
     }
 
@@ -178,7 +189,7 @@ contract TaxManager {
         return devPoolTaxRate;
     }
 
-    function setRewardPoolRate(uint256 _rewardPoolRate) external {
+    function setRewardPoolTaxRate(uint256 _rewardPoolRate) external {
         rewardPoolTaxRate = _rewardPoolRate;
     }
 

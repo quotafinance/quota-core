@@ -33,16 +33,16 @@ async function main() {
   await taxmanager.deployed();
   console.log("Implementation of TaxManager deployed to:", taxmanager.address);
 
+  setupTaxManagerParameters(taxmanager);
+
   const TierManager = await hre.ethers.getContractFactory("TierManager");
   const tiermanager = await TierManager.deploy();
   await tiermanager.deployed();
   console.log("Implementation of TierManager deployed to:", tiermanager.address);
 
-  // Test only
-  await tiermanager.setTokenURI(1, "One");
-  await tiermanager.setTokenURI(2, "Two");
-  await tiermanager.setTokenURI(4, "Four");
+  setupTierManagerParameters(tiermanager);
 
+  // Test only
   const ChainLink = await hre.ethers.getContractFactory("ChainLinkAggregator");
   const chainlink = await ChainLink.deploy();
   await chainlink.deployed();
@@ -123,7 +123,85 @@ async function main() {
   console.log("Pool1 deployed to:", pool1);
   console.log("Pool2 deployed to:", pool2);
 
+  //Test stuff
+  const mint = await factory.mint("0x0000000000000000000000000000000000000000");
+  //const handler1 = await factory.NFT();
+  const txReceipt = await mint.wait()
+  let handlerAddress, depositAddress;
+  for (const event of txReceipt.events) {
+    if(event.event === "NewIssuance") {
+      const { handler, depositBox } = event.args;
+      handlerAddress = handler;
+      depositAddress = depositBox;
+    }
+  }
+  console.log("Handler and Deposit", handlerAddress, depositAddress);
+  const handler1 = await handler.attach(handlerAddress);
+  console.log("Referral and Deposit", await handler1.referredBy(), await handler1.getDepositBox());
+  // First mint complete
+  console.log(await nft.getTransferLimit(1));
+  await handler1.setTier(4);
+  console.log(await nft.getTransferLimit(1));
 }
+
+async function setupTierManagerParameters(tiermanager) {
+  //Test only, replace with real URIs
+  await tiermanager.setTokenURI(1, "One");
+  await tiermanager.setTokenURI(2, "Two");
+  await tiermanager.setTokenURI(3, "Three");
+  await tiermanager.setTokenURI(4, "Four");
+  // End of test
+  await tiermanager.setConditions(1, 5, 3, 3, 0, 0, 0);
+  await tiermanager.setConditions(2, 20, 5, 10, 5, 0, 0);
+  await tiermanager.setConditions(3, 60, 10, 20, 10, 5, 0);
+  await tiermanager.setConditions(4, 150, 14, 50, 20, 10, 5);
+  await tiermanager.setTransferLimit(0, 20);
+  await tiermanager.setTransferLimit(1, 20);
+  await tiermanager.setTransferLimit(2, 30);
+  await tiermanager.setTransferLimit(3, 40);
+  await tiermanager.setTransferLimit(4, 50);
+}
+
+async function setupTaxManagerParameters(taxmanager) {
+  // // Test only, replace with real addresses
+  // const accounts = await ethers.getSigners();
+  // const selfTaxPool = accounts[3];
+  // const rightUpTaxPool = accounts[4];
+  // const maintenancePool = accounts[5];
+  // const devPool = accounts[6];
+  // const rewardAllocationPool = accounts[7];
+  // const perpetualPool = accounts[8];
+  // const tierPool = accounts[9];
+  // const revenuePool = accounts[10];
+  // const marketingPool = accounts[11];
+  // // End of test
+  // await taxmanager.setSelfTaxPool(selfTaxPool);
+  // await taxmanager.setRightUpTaxPool(rightUpTaxPool);
+  // await taxmanager.setMaintenancePool(maintenancePool);
+  // await taxmanager.setDevPool(devPool);
+  // await taxmanager.setRewardAllocationPool(rewardAllocationPool);
+  // await taxmanager.setPerpetualPool(perpetualPool);
+  // await taxmanager.setTierPool(tierPool);
+  // await taxmanager.setRevenuePool(revenuePool);
+  // await taxmanager.setMarketingPool(marketingPool);
+  await taxmanager.setSelfTaxRate(0);
+  await taxmanager.setRightUpTaxRate(0);
+  await taxmanager.setMaintenanceTaxRate(100);
+  await taxmanager.setProtocolTaxRate(2500);
+  await taxmanager.setPerpetualPoolTaxRate(450);
+  await taxmanager.setDevPoolTaxRate(50);
+  await taxmanager.setRewardPoolTaxRate(50);
+  await taxmanager.setTierPoolRate(1450);
+  await taxmanager.setBulkReferralRate(0, 0, 0, 0, 0);
+  await taxmanager.setBulkReferralRate(1, 450, 100, 20, 4);
+  await taxmanager.setBulkReferralRate(2, 700, 150, 30, 6);
+  await taxmanager.setBulkReferralRate(3, 950, 200, 40, 8);
+  await taxmanager.setBulkReferralRate(4, 1200, 250, 50, 10);
+
+  console.log("Tax set", await taxmanager.getReferralRate(1, 4));
+  console.log("Tax set", await taxmanager.getReferralRate(2, 4));
+}
+
   // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
 
