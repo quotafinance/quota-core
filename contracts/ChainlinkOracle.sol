@@ -14,7 +14,7 @@ contract ChainlinkOracle {
   }
 
   function getPriceSNP() public view returns (bool, uint256) {
-    // answer has 8 decimals, it is the price of SNP500
+    // answer has 8 decimals, it is the price of SPY.US which is 1/10th of SNP500
     // if the round is not completed, updated at is 0
     (,int256 answer,,uint256 updatedAt,) = AggregatorV3Interface(oracle).latestRoundData();
     // add 10 decimals at the end
