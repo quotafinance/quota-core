@@ -5,6 +5,7 @@
 // Runtime Environment's members available in the global scope.
 const hre = require("hardhat");
 const {ethers} = require("hardhat");
+const {parseEther} = require("ethers/lib/utils");
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -20,7 +21,6 @@ async function main() {
   const thirdAccount = accounts[2];
   const zeroAddress = "0x0000000000000000000000000000000000000000";
   console.log("Signers", ownerAccount.address, secondAccount.address, thirdAccount.address);
-
 
   const ETF = await hre.ethers.getContractFactory("ETF");
   const etf = await ETF.deploy();
@@ -107,6 +107,21 @@ async function main() {
   const staking = await stakingFactory.deploy(etf.address, notifier.address, taxmanager.address);
   await staking.deployed()
   console.log("Staking deployed to:", staking.address);
+
+  const tokenFactory = await ethers.getContractFactory('MockERC');
+  const lp = await tokenFactory.deploy();
+  await lp.deployed();
+
+  const lp2 = await tokenFactory.deploy();
+  await lp2.deployed();
+
+  await staking.initialize(lp.address, parseEther('10'));
+  await staking.initialize(lp2.address, parseEther('10'));
+
+  const [pool1, pool2] = await staking.getPools();
+
+  console.log("Pool1 deployed to:", pool1);
+  console.log("Pool2 deployed to:", pool2);
 
 }
   // We recommend this pattern to be able to use async/await everywhere

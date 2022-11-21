@@ -40,7 +40,7 @@ contract PoolEscrow {
         governance = _governance;
     }
 
-    function setGovernance(address account) external onlyGov {
+    function setGovernance(address account) external  {
         governance = account;
     }
 
