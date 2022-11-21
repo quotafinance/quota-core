@@ -6,8 +6,18 @@ import "./PoolEscrow.sol";
 contract Notifier is Ownable {
 
   event Notified(address);
+  event Staked(address indexed pool, address indexed user, uint256 amount);
+  event Withdrawn(address indexed pool, address indexed user, uint256 amount);
 
   constructor() public {}
+
+  function notifyStaked(address user, uint256 amount) public {
+    emit Staked(msg.sender, user, amount);
+  }
+
+  function notifyWithdrawn(address user, uint256 amount) public {
+    emit Withdrawn(msg.sender, user,  amount);
+  }
 
   function notify(address[] memory pools, uint256 amount, address token, uint256 tokenAmount) public onlyOwner {
     for (uint256 i = 0; i < pools.length; i++) {

@@ -81,12 +81,14 @@ contract TokenRewards is LPTokenWrapper, IRewardDistributionRecipient {
             lastWithdrawalTime[msg.sender] = block.timestamp;
         super.stake(amount);
         emit Staked(msg.sender, amount);
+        rewardDistribution.notifyStaked(msg.sender, amount);
     }
 
     function withdraw(uint256 amount) public updateReward(msg.sender) {
         require(amount > 0, "Cannot withdraw 0");
         super.withdraw(amount);
         emit Withdrawn(msg.sender, amount);
+        rewardDistribution.notifyWithdrawn(msg.sender, amount);
     }
 
     function exit() external {
