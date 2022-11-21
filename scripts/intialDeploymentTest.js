@@ -25,20 +25,20 @@ async function main() {
   const ETF = await hre.ethers.getContractFactory("ETF");
   const etf = await ETF.deploy();
   await etf.deployed();
-  console.log("Implementation of Token deployed to:", etf.address);
+  console.log("Token deployed to:", etf.address);
   await etf["initialize(string,string,uint8,address,uint256)"]("Quota", "4.0", 18, ownerAccount.address, ethers.utils.parseEther("8888"));
 
   const TaxManager = await hre.ethers.getContractFactory("TaxManager");
   const taxmanager = await TaxManager.deploy();
   await taxmanager.deployed();
-  console.log("Implementation of TaxManager deployed to:", taxmanager.address);
+  console.log("TaxManager deployed to:", taxmanager.address);
 
   setupTaxManagerParameters(taxmanager);
 
   const TierManager = await hre.ethers.getContractFactory("TierManager");
   const tiermanager = await TierManager.deploy();
   await tiermanager.deployed();
-  console.log("Implementation of TierManager deployed to:", tiermanager.address);
+  console.log("TierManager deployed to:", tiermanager.address);
 
   setupTierManagerParameters(tiermanager);
 
@@ -46,13 +46,12 @@ async function main() {
   const ChainLink = await hre.ethers.getContractFactory("ChainLinkAggregator");
   const chainlink = await ChainLink.deploy();
   await chainlink.deployed();
-  console.log("Implementation of ChainLink Oracle deployed to:", chainlink.address);
+  console.log("ChainLink Oracle deployed to:", chainlink.address);
 
   const Rebaser = await hre.ethers.getContractFactory("Rebaser");
   const rebaser = await Rebaser.deploy(etf.address, zeroAddress, chainlink.address, taxmanager.address);
   await rebaser.deployed();
-  console.log("Implementation of Rebaser deployed to:", rebaser.address);
-  console.log("Price of SNP", await rebaser.getPriceSNP());
+  console.log("Rebaser deployed to:", rebaser.address);
   // End of Test only
 
   // For Mainnet
@@ -60,11 +59,11 @@ async function main() {
   // // The mainnet oracle address: 0x187c42f6C0e7395AeA00B1B30CB0fF807ef86d5d
   // const rebaser = await Rebaser.deploy(etf.address, zeroAddress, "0x187c42f6C0e7395AeA00B1B30CB0fF807ef86d5d", taxmanager.address);
   // await rebaser.deployed();
-  // console.log("Implementation of Rebaser deployed to:", rebaser.address);
+  // console.log("Rebaser deployed to:", rebaser.address);
   // console.log("Price of SNP", await rebaser.getPriceSNP());
 
   await etf._setRebaser(rebaser.address);
-  console.log("Rebaser set to:", rebaser.address);
+  console.log("For Token Rebaser set to:", rebaser.address);
 
   const Handler = await hre.ethers.getContractFactory("ReferralHandler");
   const handler = await Handler.deploy();
@@ -80,7 +79,6 @@ async function main() {
   const factory = await NFTFactory.deploy(handler.address, depositbox.address, "One");
   await factory.deployed();
   console.log("Factory deployed to:", factory.address);
-  console.log(await factory.admin())
 
   const NFT = await hre.ethers.getContractFactory("MembershipNFT");
   const nft = await NFT.deploy(factory.address);
@@ -104,9 +102,9 @@ async function main() {
   console.log("Notifier deployed to:", notifier.address);
 
   const stakingFactory = await ethers.getContractFactory('StakingFactory');
-  const staking = await stakingFactory.deploy(etf.address, notifier.address, taxmanager.address);
+  const staking = await stakingFactory.deploy(etf.address, notifier.address, factory.address);
   await staking.deployed()
-  console.log("Staking deployed to:", staking.address);
+  console.log("Staking Factory deployed to:", staking.address);
 
   const tokenFactory = await ethers.getContractFactory('MockERC');
   const lp = await tokenFactory.deploy();
@@ -123,25 +121,6 @@ async function main() {
   console.log("Pool1 deployed to:", pool1);
   console.log("Pool2 deployed to:", pool2);
 
-  //Test stuff
-  const mint = await factory.mint("0x0000000000000000000000000000000000000000");
-  //const handler1 = await factory.NFT();
-  const txReceipt = await mint.wait()
-  let handlerAddress, depositAddress;
-  for (const event of txReceipt.events) {
-    if(event.event === "NewIssuance") {
-      const { handler, depositBox } = event.args;
-      handlerAddress = handler;
-      depositAddress = depositBox;
-    }
-  }
-  console.log("Handler and Deposit", handlerAddress, depositAddress);
-  const handler1 = await handler.attach(handlerAddress);
-  console.log("Referral and Deposit", await handler1.referredBy(), await handler1.getDepositBox());
-  // First mint complete
-  console.log(await nft.getTransferLimit(1));
-  await handler1.setTier(4);
-  console.log(await nft.getTransferLimit(1));
 }
 
 async function setupTierManagerParameters(tiermanager) {
@@ -164,26 +143,26 @@ async function setupTierManagerParameters(tiermanager) {
 
 async function setupTaxManagerParameters(taxmanager) {
   // // Test only, replace with real addresses
-  // const accounts = await ethers.getSigners();
-  // const selfTaxPool = accounts[3];
-  // const rightUpTaxPool = accounts[4];
-  // const maintenancePool = accounts[5];
-  // const devPool = accounts[6];
-  // const rewardAllocationPool = accounts[7];
-  // const perpetualPool = accounts[8];
-  // const tierPool = accounts[9];
-  // const revenuePool = accounts[10];
-  // const marketingPool = accounts[11];
+  const accounts = await ethers.getSigners();
+  const selfTaxPool = accounts[3].address;
+  const rightUpTaxPool = accounts[4].address;
+  const maintenancePool = accounts[5].address;
+  const devPool = accounts[6].address;
+  const rewardAllocationPool = accounts[7].address;
+  const perpetualPool = accounts[8].address;
+  const tierPool = accounts[9].address;
+  const revenuePool = accounts[10].address;
+  const marketingPool = accounts[11].address;
   // // End of test
-  // await taxmanager.setSelfTaxPool(selfTaxPool);
-  // await taxmanager.setRightUpTaxPool(rightUpTaxPool);
-  // await taxmanager.setMaintenancePool(maintenancePool);
-  // await taxmanager.setDevPool(devPool);
-  // await taxmanager.setRewardAllocationPool(rewardAllocationPool);
-  // await taxmanager.setPerpetualPool(perpetualPool);
-  // await taxmanager.setTierPool(tierPool);
-  // await taxmanager.setRevenuePool(revenuePool);
-  // await taxmanager.setMarketingPool(marketingPool);
+  await taxmanager.setSelfTaxPool(selfTaxPool);
+  await taxmanager.setRightUpTaxPool(rightUpTaxPool);
+  await taxmanager.setMaintenancePool(maintenancePool);
+  await taxmanager.setDevPool(devPool);
+  await taxmanager.setRewardAllocationPool(rewardAllocationPool);
+  await taxmanager.setPerpetualPool(perpetualPool);
+  await taxmanager.setTierPool(tierPool);
+  await taxmanager.setRevenuePool(revenuePool);
+  await taxmanager.setMarketingPool(marketingPool);
   await taxmanager.setSelfTaxRate(0);
   await taxmanager.setRightUpTaxRate(0);
   await taxmanager.setMaintenanceTaxRate(100);
@@ -198,8 +177,6 @@ async function setupTaxManagerParameters(taxmanager) {
   await taxmanager.setBulkReferralRate(3, 950, 200, 40, 8);
   await taxmanager.setBulkReferralRate(4, 1200, 250, 50, 10);
 
-  console.log("Tax set", await taxmanager.getReferralRate(1, 4));
-  console.log("Tax set", await taxmanager.getReferralRate(2, 4));
 }
 
   // We recommend this pattern to be able to use async/await everywhere

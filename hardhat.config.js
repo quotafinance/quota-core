@@ -9,6 +9,11 @@ require('dotenv').config()
  * @type import('hardhat/config').HardhatUserConfig
  */
 
+ const data = require("./secrets.json");
+ const INFURA_API_KEY = data.INFURA_API_KEY;
+ const ROPSTEN_PRIVATE_KEY = data.ROPSTEN_PRIVATE_KEY;
+ const ETHERSCAN_KEY = data.ETHERSCAN_KEY;
+
 task("accounts", "Prints the list of accounts", async () => {
   const accounts = await ethers.getSigners();
 
