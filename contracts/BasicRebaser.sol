@@ -97,7 +97,7 @@ contract BasicRebaser {
         negativeRebaseLimit = _limit;
   }
 
-  function refereralReward(address _taxManager) external onlyGov {
+  function setTaxManager(address _taxManager) external onlyGov {
     taxManager = ITaxManager(_taxManager);
   }
 

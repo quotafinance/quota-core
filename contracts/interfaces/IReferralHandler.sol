@@ -2,6 +2,8 @@
 pragma solidity 0.8.4;
 
 interface IReferralHandler {
+    function initialize(address, uint256, address, address, address, uint256) external;
+    function setDepositBox(address) external;
     function checkExistence(uint256, address) external view returns (address);
     function coupledNFT() external view returns (address);
     function referredBy() external view returns (address);

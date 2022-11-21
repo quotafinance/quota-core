@@ -14,7 +14,6 @@ contract TokenRewards is LPTokenWrapper, IRewardDistributionRecipient {
     uint256 public rewardRate = 0;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
-    uint256 public withdrawlCoolDown = 3 minutes;
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
     mapping(address => uint256) public lastWithdrawalTime;
@@ -75,11 +74,12 @@ contract TokenRewards is LPTokenWrapper, IRewardDistributionRecipient {
     }
 
     // stake visibility is public as overriding LPTokenWrapper's stake() function
-    function stake(uint256 amount) public updateReward(msg.sender) {
+    // Duration here is in days
+    function stake(uint256 amount, uint256 duration) public updateReward(msg.sender) {
         require(amount > 0, "Cannot stake 0");
         if(lastWithdrawalTime[msg.sender] == 0)
             lastWithdrawalTime[msg.sender] = block.timestamp;
-        super.stake(amount);
+        super.stake(amount, duration);
         emit Staked(msg.sender, amount);
     }
 
@@ -96,7 +96,6 @@ contract TokenRewards is LPTokenWrapper, IRewardDistributionRecipient {
 
     function getReward() public updateReward(msg.sender) {
         uint256 reward = earned(msg.sender);
-        require(block.timestamp > lastWithdrawalTime[msg.sender] + withdrawlCoolDown, "Withdrawn recently");
         if (reward > 0) {
             rewards[msg.sender] = 0;
             lastWithdrawalTime[msg.sender] = block.timestamp;

@@ -2,11 +2,12 @@
 pragma solidity 0.8.4;
 
 import "./interfaces/IMembershipNFT.sol";
-import "./ReferralHandler.sol";
-import "./DepositBox.sol";
+import "./interfaces/IReferralHandler.sol";
+import "./interfaces/IDepositBox.sol";
 import "./interfaces/ITierManager.sol";
 import "./interfaces/IRebaserNew.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import { Clones } from "@openzeppelin/contracts/proxy/Clones.sol";
 
 contract NFTFactory {
 
@@ -15,6 +16,8 @@ contract NFTFactory {
     address public taxManager;
     address public rebaser;
     address public token;
+    address public handlerImplementation;
+    address public depositBoxImplementation;
     mapping(uint256 => address) NFTToHandler;
     mapping(address => uint256) HandlerToNFT;
     mapping(uint256 => address) NFTToDepositBox;
@@ -33,9 +36,10 @@ contract NFTFactory {
         _;
     }
 
-    constructor(address _tierManager, string memory _tokenURI) {
+    constructor(address _handlerImplementation, address _depositBoxImplementation, string memory _tokenURI) {
         admin = msg.sender;
-        tierManager = _tierManager;
+        handlerImplementation = _handlerImplementation;
+        depositBoxImplementation = _depositBoxImplementation;
         tokenURI = _tokenURI;
     }
 
@@ -122,8 +126,10 @@ contract NFTFactory {
     function mint(address referrer) external returns (address) { //Referrer is address of NFT handler of the guy above
         uint256 nftID = NFT.issueNFT(msg.sender, tokenURI);
         uint256 epoch = IRebaser(rebaser).getPositiveEpochCount(); // The handlers need to only track positive rebases
-        ReferralHandler handler = new ReferralHandler(admin, epoch, referrer, token, address(NFT), nftID);
-        DepositBox depositBox = new DepositBox(address(handler), nftID, token);
+        IReferralHandler handler = IReferralHandler(Clones.clone(handlerImplementation));
+        handler.initialize(admin, epoch, token, referrer, address(NFT), nftID);
+        IDepositBox depositBox =  IDepositBox(Clones.clone(depositBoxImplementation));
+        depositBox.initialize(address(handler), nftID, token);
         handler.setDepositBox(address(depositBox));
         NFTToHandler[nftID] = address(handler);
         NFTToDepositBox[nftID] = address(depositBox);
@@ -153,5 +159,4 @@ contract NFTFactory {
             }
         }
     }
-
 }

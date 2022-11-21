@@ -3,7 +3,7 @@ pragma solidity 0.8.4;
 import "./interfaces/IReferralHandler.sol";
 import "./interfaces/ICrytical.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "./interfaces/IStakingPool.sol";
+import "./interfaces/IStakingPoolAggregator.sol";
 
 contract TierManager {
 
@@ -21,22 +21,22 @@ contract TierManager {
     }
 
     address public admin;
-    IStakingPool public stakingPool;
-    mapping(uint256 => TierParamaters) levelUpConditions;
-    mapping(uint256 => uint256) transferLimits;
-    string[] public tokenURI;
+    IStakingPoolAggregator public stakingPool;
+    mapping(uint256 => TierParamaters) public levelUpConditions;
+    mapping(uint256 => uint256) public transferLimits;
+    mapping(uint256 => string) public tokenURI;
 
     modifier onlyAdmin() { // Change this to a list with ROLE library
         require(msg.sender == admin, "only admin");
         _;
     }
 
-    constructor(address _admin) {
-        admin = _admin;
+    constructor() {
+        admin = msg.sender;
     }
 
-    function setStakingPool(address pool) public onlyAdmin {
-        stakingPool = IStakingPool(pool);
+    function setStakingPool(address oracle) public onlyAdmin {
+        stakingPool = IStakingPoolAggregator(oracle);
     }
 
     function scaleUpTokens(uint256 amount) pure public returns(uint256) {
@@ -45,12 +45,12 @@ contract TierManager {
     }
 
     function setConditions (
-        uint256 tier, uint256 stakedTokens, uint256 stakedDuration,
+        uint256 tier, uint256 stakedTokens, uint256 stakedDurationInDays,
         uint256 tierZero, uint256 tierOne, uint256 tierTwo,
         uint256 tierThree
     ) public onlyAdmin {
         levelUpConditions[tier].stakedTokens = stakedTokens;
-        levelUpConditions[tier].stakedDuration = stakedDuration;
+        levelUpConditions[tier].stakedDuration = stakedDurationInDays;
         levelUpConditions[tier].tierZero = tierZero;
         levelUpConditions[tier].tierOne = tierOne;
         levelUpConditions[tier].tierTwo = tierTwo;
@@ -60,9 +60,7 @@ contract TierManager {
     function validateUserTier(address owner, uint256 tier, uint256[] memory tierCounts) view public returns (bool) {
         // Check if user has valid requirements for the tier, if it returns true it means they have the requirement for the tier sent as parameter
 
-        if(stakingPool.stakedTokens(owner) < levelUpConditions[tier].stakedTokens)
-            return false;
-        if(stakingPool.stakedDuration(owner) < levelUpConditions[tier].stakedDuration)
+        if(!isMinimumStaked(owner, levelUpConditions[tier].stakedTokens, levelUpConditions[tier].stakedDuration))
             return false;
         if(tierCounts[0] < levelUpConditions[tier].tierZero)
             return false;
@@ -73,6 +71,10 @@ contract TierManager {
         if(tierCounts[3] < levelUpConditions[tier].tierThree)
             return false;
         return true;
+    }
+
+    function isMinimumStaked(address user, uint256 stakedAmount, uint256 stakedDuration) internal view returns (bool) {
+        return stakingPool.checkForStakedRequirements(user, stakedAmount, stakedDuration);
     }
 
     function setTokenURI(uint256 tier, string memory _tokenURI) onlyAdmin public {

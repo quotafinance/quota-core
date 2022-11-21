@@ -77,14 +77,14 @@ contract TokenInterface is TokenStorage, BalanceStorage {
     function etfToFragment(uint256 etf) external view returns (uint256);
     function fragmentToETF(uint256 value) external view returns (uint256);
 
-    /* - Governance Functions - */
+//     /* - Governance Functions, modified to track balance - */
     function getPriorBalance(address account, uint blockNumber) external view returns (uint256);
-//    function delegateBySig(address delegatee, uint nonce, uint expiry, uint8 v, bytes32 r, bytes32 s) external;
-    function delegate(address delegatee) external;
-    function delegates(address delegator) external view returns (address);
+    // function delegateBySig(address delegatee, uint nonce, uint expiry, uint8 v, bytes32 r, bytes32 s) external;
+    // function delegate(address delegatee) external;
+    // function delegates(address delegator) external view returns (address);
     function getCurrentBalance(address account) external view returns (uint256);
 
-    /* - Permissioned/Governance functions - */
+//     /* - Permissioned/Governance functions - */
     function mint(address to, uint256 amount) external returns (bool);
     function rebase(uint256 epoch, uint256 indexDelta, bool positive) external returns (uint256);
     function _setRebaser(address rebaser_) external;

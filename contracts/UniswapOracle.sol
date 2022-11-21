@@ -10,15 +10,15 @@ contract UniswapOracle {
 
   using SafeMath for uint256;
 
-  address public constant oracle = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
-  address public constant usdc = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
-  address public constant weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+  address public constant oracle = 0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff;
+  address public constant usdc = 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174;
+  address public constant wNative = 0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270;
   address public etf;
   address[] public path;
 
   constructor (address token) public {
     etf = token;
-    path = [etf, weth, usdc];
+    path = [etf, wNative, usdc];
   }
 
   function getPriceETF() public view returns (bool, uint256) {

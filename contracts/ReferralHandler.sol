@@ -22,15 +22,15 @@ contract ReferralHandler {
     address public referredBy; // NFT address of the referrer's ID
     address[] public referrals;
     address public depositBox;
-    uint256 private tier = 1; // Default tier is 1 instead of 0, since solidity 0 can also mean non-existant, all tiers on contract are + 1
-    // NFT addresses of those referred by this NFT and its subordinates
-    bool private canLevel = true;
+    uint256 private tier;
+    bool private canLevel;
     uint256 claimedEpoch; // Contructor sets the latest positive Epoch, to keep count of future epochs that need to be claimed
+    // NFT addresses of those referred by this NFT and its subordinates
     address[] public firstLevelAddress;
     address[] public secondLevelAddress;
     address[] public thirdLevelAddress;
     address[] public fourthLevelAddress;
-    uint256 constant BASE = 10000;
+    uint256 public BASE;
     // Mapping of the above Address list and their corresponding NFT tiers
     mapping (address => uint256) public first_level;
     mapping (address => uint256) public second_level;
@@ -52,14 +52,14 @@ contract ReferralHandler {
         _;
     }
 
-    constructor(
+    function initialize(
         address _admin,
         uint256 _epoch,
         address _token,
         address _referredBy,
         address _nftAddress,
         uint256 _nftId
-    ) {
+    ) public {
         admin = _admin;
         claimedEpoch = _epoch;
         token = IETF(_token);
@@ -68,6 +68,9 @@ contract ReferralHandler {
         NFTContract = IMembershipNFT(_nftAddress);
         nftID = _nftId;
         mintTime = block.timestamp;
+        tier = 1; // Default tier is 1 instead of 0, since solidity 0 can also mean non-existant, all tiers on contract are + 1
+        canLevel = true;
+        BASE = 10000;
     }
 
     function ownedBy() public view returns (address) { // Returns the Owner of the NFT coupled with this handler
@@ -115,7 +118,7 @@ contract ReferralHandler {
         return depositBox;
     }
 
-    function setDepositBox(address _depositBox) external onlyAdmin {
+    function setDepositBox(address _depositBox) external onlyFactory {
         depositBox = _depositBox;
     }
 
@@ -192,7 +195,7 @@ contract ReferralHandler {
     }
 
     function getTierCounts() public view returns (uint256[] memory) { // returns count of Tiers 0 to 5 under the user
-        uint256[] memory tierCounts = new uint256[](6); // Tiers can be 0 to 5
+        uint256[] memory tierCounts = new uint256[](5); // Tiers can be 0 to 4 (Stored 1 to 5 in Handlers)
         for (uint256 index = 0; index < firstLevelAddress.length; index++) {
             address referral = firstLevelAddress[index];
             uint256 NFTtier = first_level[referral].sub(1); // Subtrating one to offset the default +1 due to solidity limitations
@@ -217,10 +220,12 @@ contract ReferralHandler {
     }
 
     function setTier(uint256 _tier) public onlyAdmin {
-        require( _tier >= 0 && _tier <=5, "Invalid depth");
+        require( _tier >= 0 && _tier < 5, "Invalid depth");
         uint256 oldTier = getTier(); // For events
         tier = _tier.add(1); // Adding the default +1 offset stored in handlers
         updateReferrersAbove(tier);
+        string memory tokenURI = getTierManager().getTokenURI(getTier());
+        NFTContract.changeURI(nftID, tokenURI);
         INFTFactory(factory).alertLevel(oldTier, getTier());
     }
 

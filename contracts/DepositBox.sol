@@ -14,7 +14,7 @@ contract DepositBox {
     IReferralHandler public handler;
     IETF public token;
 
-    constructor(address _handler, uint256 _nftID, address _token) {
+    function initialize(address _handler, uint256 _nftID, address _token) public {
         factory = msg.sender;
         handler = IReferralHandler(_handler);
         nftID = _nftID;
