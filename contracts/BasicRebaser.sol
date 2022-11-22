@@ -217,6 +217,7 @@ contract BasicRebaser {
         IERC20(etf).safeApprove(secondaryPool, secondaryPoolBudget);
         IPoolEscrow(secondaryPool).notifySecondaryTokens(secondaryPoolBudget);
       } else {
+        // Incase perpetual pool address was not set
         address perpetualPool = taxManager.getPerpetualPool();
         IETF(etf).mint(perpetualPool, secondaryPoolBudget);
       }

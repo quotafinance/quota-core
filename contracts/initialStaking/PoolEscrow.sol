@@ -21,7 +21,7 @@ contract PoolEscrow {
 
     address public shareToken;
     address public pool;
-    IETF public token;
+    address public token;
     address public factory;
     address public distributor;
     address public governance;
@@ -34,7 +34,7 @@ contract PoolEscrow {
         address _factory) public {
         shareToken = _shareToken;
         pool = _pool;
-        token = IETF(_token);
+        token = _token;
         factory = _factory;
         governance = msg.sender;
     }
@@ -55,7 +55,7 @@ contract PoolEscrow {
     }
 
     function getTokenNumber(uint256 shareAmount) public view returns(uint256) {
-        return token.balanceOf(address(this))
+        return IETF(token).balanceOf(address(this))
             .mul(shareAmount)
             .div(IERC20(shareToken).totalSupply());
     }
@@ -66,10 +66,9 @@ contract PoolEscrow {
     * extend reward period.
     */
     function notifySecondaryTokens(uint256 amount) external {
-        token.transferFrom(msg.sender, address(this), amount);
-        uint256 freshMint = amount;
-        IERC20Mintable(shareToken).mint(pool, freshMint);
-        TokenRewards(pool).notifyRewardAmount(freshMint);
+        IETF(token).transferFrom(msg.sender, address(this), amount);
+        IERC20Mintable(shareToken).mint(pool, amount);
+        TokenRewards(pool).notifyRewardAmount(amount);
     }
 
     function distributeTaxAndReward(address owner, uint256 currentClaimable, uint256 protocolTaxRate, uint256 taxDivisor) internal {
@@ -82,7 +81,7 @@ contract PoolEscrow {
         {
         uint256 taxedAmount = currentClaimable.mul(protocolTaxRate).div(taxDivisor);
         uint256 userReward = currentClaimable.sub(taxedAmount);
-        token.transferForRewards(owner, userReward);
+        IETF(token).transferForRewards(owner, userReward);
         emit RewardClaimed(owner, userReward, block.timestamp);
         }
         {
@@ -90,14 +89,16 @@ contract PoolEscrow {
         uint256 perpetualAmount = currentClaimable.mul(perpetualTaxRate).div(taxDivisor);
         leftOverTaxRate = leftOverTaxRate.sub(perpetualTaxRate);
         address perpetualPool = taxManager.getPerpetualPool();
-        token.transferForRewards(perpetualPool, perpetualAmount);
+        IERC20(token).safeApprove(perpetualPool, 0);
+        IERC20(token).safeApprove(perpetualPool, perpetualAmount);
+        PoolEscrow(perpetualPool).notifySecondaryTokens(perpetualAmount);
         }
         // Block Scoping to reduce local Variables spillage
         {
         uint256 protocolMaintenanceRate = taxManager.getMaintenanceTaxRate();
         uint256 protocolMaintenanceAmount = currentClaimable.mul(protocolMaintenanceRate).div(taxDivisor);
         address maintenancePool = taxManager.getMaintenancePool();
-        token.transferForRewards(maintenancePool, protocolMaintenanceAmount);
+        IETF(token).transferForRewards(maintenancePool, protocolMaintenanceAmount);
         leftOverTaxRate = leftOverTaxRate.sub(protocolMaintenanceRate); // Minted above
         }
         // Transfer taxes to referrers
@@ -110,14 +111,14 @@ contract PoolEscrow {
                 // Rightup Reward
                 uint256 rightUpRate = taxManager.getRightUpTaxRate();
                 uint256 rightUpAmount = currentClaimable.mul(rightUpRate).div(taxDivisor);
-                token.transferForRewards(referral[1], rightUpAmount);
+                IETF(token).transferForRewards(referral[1], rightUpAmount);
                 leftOverTaxRate = leftOverTaxRate.sub(rightUpRate);
                 // Normal Referral Reward
                 uint256 firstTier = IReferralHandler(referral[1]).getTier();
                 uint256 firstRewardRate = taxManager.getReferralRate(1, firstTier);
                 leftOverTaxRate = leftOverTaxRate.sub(firstRewardRate);
                 uint256 firstReward = currentClaimable.mul(firstRewardRate).div(taxDivisor);
-                token.transferForRewards(referral[1], firstReward);
+                IETF(token).transferForRewards(referral[1], firstReward);
                 }
                 referral[2] = IReferralHandler(referral[1]).referredBy();
                 if(referral[2] != address(0)) {
@@ -127,7 +128,7 @@ contract PoolEscrow {
                     uint256 secondRewardRate = taxManager.getReferralRate(2, secondTier);
                     leftOverTaxRate = leftOverTaxRate.sub(secondRewardRate);
                     uint256 secondReward = currentClaimable.mul(secondRewardRate).div(taxDivisor);
-                    token.transferForRewards(referral[2], secondReward);
+                    IETF(token).transferForRewards(referral[2], secondReward);
                     }
                     referral[3] = IReferralHandler(referral[2]).referredBy();
                     if(referral[3] != address(0)) {
@@ -137,7 +138,7 @@ contract PoolEscrow {
                         uint256 thirdRewardRate = taxManager.getReferralRate(3, thirdTier);
                         leftOverTaxRate = leftOverTaxRate.sub(thirdRewardRate);
                         uint256 thirdReward = currentClaimable.mul(thirdRewardRate).div(taxDivisor);
-                        token.transferForRewards(referral[3], thirdReward);
+                        IETF(token).transferForRewards(referral[3], thirdReward);
                         }
                         referral[4] = IReferralHandler(referral[3]).referredBy();
                         if(referral[4] != address(0)) {
@@ -147,7 +148,7 @@ contract PoolEscrow {
                             uint256 fourthRewardRate = taxManager.getReferralRate(4, fourthTier);
                             leftOverTaxRate = leftOverTaxRate.sub(fourthRewardRate);
                             uint256 fourthReward = currentClaimable.mul(fourthRewardRate).div(taxDivisor);
-                            token.transferForRewards(referral[4], fourthReward);
+                            IETF(token).transferForRewards(referral[4], fourthReward);
                             }
                         }
                     }
@@ -159,7 +160,7 @@ contract PoolEscrow {
         uint256 devTaxRate = taxManager.getDevPoolRate();
         uint256 devPoolAmount = currentClaimable.mul(devTaxRate).div(taxDivisor);
         address devPool = taxManager.getDevPool();
-        token.transferForRewards(devPool, devPoolAmount);
+        IETF(token).transferForRewards(devPool, devPoolAmount);
         leftOverTaxRate = leftOverTaxRate.sub(devTaxRate);
         }
         // Reward Allocation
@@ -167,14 +168,14 @@ contract PoolEscrow {
         uint256 rewardTaxRate = taxManager.getRewardPoolRate();
         uint256 rewardPoolAmount = currentClaimable.mul(rewardTaxRate).div(taxDivisor);
         address rewardPool = taxManager.getRewardAllocationPool();
-        token.transferForRewards(rewardPool, rewardPoolAmount);
+        IETF(token).transferForRewards(rewardPool, rewardPoolAmount);
         leftOverTaxRate = leftOverTaxRate.sub(rewardTaxRate);
         }
         // Revenue Allocation
         {
         uint256 leftOverTax = currentClaimable.mul(leftOverTaxRate).div(taxDivisor);
         address revenuePool = taxManager.getRevenuePool();
-        token.transferForRewards(revenuePool, leftOverTax);
+        IETF(token).transferForRewards(revenuePool, leftOverTax);
         }
     }
 }

@@ -8,10 +8,14 @@ import "./interfaces/IRebaserNew.sol";
 import "./interfaces/IETFNew.sol";
 import "./interfaces/ITaxManager.sol";
 import "./interfaces/INFTFactory.sol";
+import "./interfaces/IPoolEscrowNew.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract ReferralHandler {
 
+    using SafeERC20 for IERC20;
     using SafeMath for uint256;
     address public admin;
     address public factory;
@@ -393,7 +397,9 @@ contract ReferralHandler {
         uint256 perpetualAmount = currentClaimable.mul(perpetualTaxRate).div(taxDivisor);
         leftOverTaxRate = leftOverTaxRate.sub(perpetualTaxRate);
         address perpetualPool = taxManager.getPerpetualPool();
-        token.transferForRewards(perpetualPool, perpetualAmount);
+        IERC20(address(token)).safeApprove(perpetualPool, 0);
+        IERC20(address(token)).safeApprove(perpetualPool, 0);
+        IPoolEscrow(perpetualPool).notifySecondaryTokens(perpetualAmount);
         }
         // Block Scoping to reduce local Variables spillage
         {
