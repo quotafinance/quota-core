@@ -12,8 +12,6 @@ async function main() {
 
     const wMatic = '0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889';
     const wETH = '0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa';
-    const usdc = '0xe6b8a5CF854791412c1f6EFC7CAf629f5Df1c747';
-    const router = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
 
     const accounts = await ethers.getSigners();
     const ownerAccount = accounts[0];
@@ -23,18 +21,6 @@ async function main() {
     await etf.deployed();
     console.log("Token deployed to:", etf.address);
     await etf["initialize(string,string,uint8,address,uint256)"]("Quota", "4.0", 18, ownerAccount.address, ethers.utils.parseEther("8888"));
-
-    const apyOracleFactory = await hre.ethers.getContractFactory("ApyOracle");
-    const apyOracle = await apyOracleFactory.deploy(router, usdc, wMatic);
-    await apyOracle.deployed();
-    console.log("APY oracle deployed to:", apyOracle.address);
-
-    const uniswapOracleFactory = await hre.ethers.getContractFactory("UniswapOracle");
-    const uniswapOracle = await uniswapOracleFactory.deploy(etf.address);
-    await uniswapOracle.deployed();
-    console.log("Uniswap oracle deployed to:", uniswapOracle.address);
-
-    console.log('Token deployed to:', etf.address);
 
     const uniswapFactory = new ethers.Contract('0x1F98431c8aD98523631AE4a59f267346ea31F984', uniswapABI, ownerAccount);
 
