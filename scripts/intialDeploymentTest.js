@@ -118,8 +118,8 @@ async function main() {
 
   const [pool1, pool2] = await staking.getPools();
 
-  console.log("Pool1 deployed to:", pool1);
-  console.log("Pool2 deployed to:", pool2);
+  console.log("Staking pool 1 deployed to:", pool1);
+  console.log("Staking pool 2 deployed to:", pool2);
 
 }
 
@@ -144,6 +144,7 @@ async function setupTierManagerParameters(tiermanager) {
 async function setupTaxManagerParameters(taxmanager) {
   // // Test only, replace with real addresses
   const accounts = await ethers.getSigners();
+  console.log('addresses', accounts.length);
   const selfTaxPool = accounts[3].address;
   const rightUpTaxPool = accounts[4].address;
   const maintenancePool = accounts[5].address;
@@ -177,6 +178,10 @@ async function setupTaxManagerParameters(taxmanager) {
   await taxmanager.setBulkReferralRate(3, 950, 200, 40, 8);
   await taxmanager.setBulkReferralRate(4, 1200, 250, 50, 10);
 
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
   // We recommend this pattern to be able to use async/await everywhere

@@ -75,6 +75,10 @@ module.exports = {
       url: `https://rinkeby.infura.io/v3/${INFURA_API_KEY}`,
       accounts: [`${ROPSTEN_PRIVATE_KEY}`],
     },
+    mumbai: {
+      url: `https://rpc-mumbai.maticvigil.com`,
+      accounts: `${ROPSTEN_PRIVATE_KEY}`]
+    }
   },
   etherscan: {
     apiKey: ETHERSCAN_KEY,
