@@ -57,7 +57,7 @@ contract TierManager {
         levelUpConditions[tier].tierThree = tierThree;
     }
 
-    function validateUserTier(address owner, uint256 tier, uint256[] memory tierCounts) view public returns (bool) {
+    function validateUserTier(address owner, uint256 tier, uint256[5] memory tierCounts) view public returns (bool) {
         // Check if user has valid requirements for the tier, if it returns true it means they have the requirement for the tier sent as parameter
 
         if(!isMinimumStaked(owner, levelUpConditions[tier].stakedTokens, levelUpConditions[tier].stakedDuration))
@@ -94,7 +94,7 @@ contract TierManager {
         return transferLimits[tier];
     }
 
-    function checkTierUpgrade(uint256[] memory tierCounts) view public returns (bool) {
+    function checkTierUpgrade(uint256[5] memory tierCounts) view public returns (bool) {
         address owner = IReferralHandler(msg.sender).ownedBy();
         uint256 newTier = IReferralHandler(msg.sender).getTier().add(1);
         return validateUserTier(owner, newTier, tierCounts); // If it returns true it means user is eligible for an upgrade in tier

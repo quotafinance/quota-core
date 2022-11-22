@@ -3,8 +3,11 @@ pragma solidity 0.8.4;
 
 import "./interfaces/IAPYOracle.sol";
 import "./interfaces/ITokenRewards.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract StakingPoolAggregator {
+
+    using SafeMath for uint256;
     address[] public pools;
     address public admin;
     address public oracle;
@@ -33,7 +36,6 @@ contract StakingPoolAggregator {
 
     function removePoolByIndex(uint256 index) onlyAdmin public returns(address) {
         require(index < pools.length);
-
         for (uint i = index; i<pools.length-1; i++){
             pools[i] = pools[i+1];
         }
@@ -46,11 +48,9 @@ contract StakingPoolAggregator {
         uint256 totalStaked = 0;
         for (uint i = 0; i < pools.length; i++) {
             uint256 lpStaked = getStakedLPForDuration(pools[i], user, stakedDuration);
-            (uint256 tokenRatio, bool positive) = IAPYOracle(oracle).tokenPerLP(pools[i], token);
-            if(positive)
-                totalStaked = totalStaked + (lpStaked * tokenRatio);
-            else
-                totalStaked = totalStaked + (lpStaked / tokenRatio);
+            //uint256 tokenRatio = IAPYOracle(oracle).tokenPerLP(pools[i], token);
+            uint256 scaledTokens = lpStaked; //(lpStaked.mul(tokenRatio)).div(1e18);
+            totalStaked = totalStaked.add(scaledTokens);
         }
         if(stakedRequirement <= totalStaked)
             return true;

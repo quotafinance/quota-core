@@ -198,8 +198,8 @@ contract ReferralHandler {
         }
     }
 
-    function getTierCounts() public view returns (uint256[] memory) { // returns count of Tiers 0 to 5 under the user
-        uint256[] memory tierCounts = new uint256[](5); // Tiers can be 0 to 4 (Stored 1 to 5 in Handlers)
+    function getTierCounts() public view returns (uint256[5] memory) { // returns count of Tiers 0 to 5 under the user
+        uint256[5] memory tierCounts; // Tiers can be 0 to 4 (Stored 1 to 5 in Handlers)
         for (uint256 index = 0; index < firstLevelAddress.length; index++) {
             address referral = firstLevelAddress[index];
             uint256 NFTtier = first_level[referral].sub(1); // Subtrating one to offset the default +1 due to solidity limitations
@@ -233,16 +233,18 @@ contract ReferralHandler {
         INFTFactory(factory).alertLevel(oldTier, getTier());
     }
 
-    function levelUp() public {
+    function levelUp() public returns (bool) {
         if(getTier() < 4 &&  canLevel == true && getTierManager().checkTierUpgrade(getTierCounts()) == true)
         {
-            uint256 oldTier = getTier(); // For events
-            updateReferrersAbove(tier.add(1));
-            tier = tier.add(1);
-            string memory tokenURI = getTierManager().getTokenURI(getTier());
-            NFTContract.changeURI(nftID, tokenURI);
-            INFTFactory(factory).alertLevel(oldTier, getTier());
+            // uint256 oldTier = getTier(); // For events
+            // updateReferrersAbove(tier.add(1));
+            // tier = tier.add(1);
+            // string memory tokenURI = getTierManager().getTokenURI(getTier());
+            // NFTContract.changeURI(nftID, tokenURI);
+            // INFTFactory(factory).alertLevel(oldTier, getTier());
+            return true;
         }
+        return false;
     }
 
     function claimReward() public { // Can be called by anyone but rewards always goes to owner of NFT
