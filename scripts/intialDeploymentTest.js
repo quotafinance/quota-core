@@ -6,6 +6,7 @@
 const hre = require("hardhat");
 const {ethers} = require("hardhat");
 const {parseEther} = require("ethers/lib/utils");
+const { constants } = require("ethers");
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -91,6 +92,17 @@ async function main() {
   await factory.setTierManager(tiermanager.address);
   console.log("NFT, Rebaser, Tax Manager and Tier Manager addresses set in factory");
 
+  // quickswap router 0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff
+  // usdc 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174
+  // wMatic 0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270
+
+  const ApyOracle = await hre.ethers.getContractFactory("ApyOracle");
+  const apyoracle = await ApyOracle.deploy("0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff", "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270");
+  await apyoracle.deployed();
+  console.log("APYOracle deployed to:", apyoracle.address);
+  // Test
+  //console.log(await apyoracle.tokenPerLP("0x369582d2010B6eD950B571F4101e3bB9b554876F", "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270"));
+
   const StakingAggregator = await hre.ethers.getContractFactory("StakingPoolAggregator");
   const stakingaggregator = await StakingAggregator.deploy(etf.address);
   await stakingaggregator.deployed();
@@ -102,9 +114,9 @@ async function main() {
   console.log("Notifier deployed to:", notifier.address);
 
   const stakingFactory = await ethers.getContractFactory('StakingFactory');
-  const staking = await stakingFactory.deploy(etf.address, notifier.address, factory.address);
-  await staking.deployed()
-  console.log("Staking Factory deployed to:", staking.address);
+  const stakingfactory = await stakingFactory.deploy(etf.address, notifier.address, factory.address);
+  await stakingfactory.deployed()
+  console.log("Staking Factory deployed to:", stakingfactory.address);
 
   const tokenFactory = await ethers.getContractFactory('MockERC');
   const lp = await tokenFactory.deploy();
@@ -113,10 +125,10 @@ async function main() {
   const lp2 = await tokenFactory.deploy();
   await lp2.deployed();
 
-  await staking.initialize(lp.address, parseEther('10'));
-  await staking.initialize(lp2.address, parseEther('10'));
+  await stakingfactory.initialize(lp.address, parseEther('10'));
+  await stakingfactory.initialize(lp2.address, parseEther('10'));
 
-  const [pool1, pool2] = await staking.getPools();
+  const [pool1, pool2] = await stakingfactory.getPools();
 
   console.log("Staking pool 1 deployed to:", pool1);
   console.log("Staking pool 2 deployed to:", pool2);

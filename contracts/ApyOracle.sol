@@ -106,20 +106,15 @@ contract ApyOracle {
       return price * balance / (10 ** decimals);
     }
   }
-  function tokenPerLP(address pool, address token) public view returns (uint256, bool) {
+  function tokenPerLP(address pool, address token) public view returns (uint256) {
     // Incase result is too small, we flip the equation to avoid 0
     uint256 tokenBalance = IERC20(token).balanceOf(pool);
     uint256 totalLP = IERC20(pool).totalSupply();
-    uint256 result = tokenBalance / totalLP;
-    if (result > 0)
-        return (result, true);
-    else {
-        result = totalLP / tokenBalance;
-        return (result, false);
-    }
+    uint256 result = (tokenBalance * 1e18) / totalLP;
+    return result;
   }
 
-  function batchUniPrices(address[] memory tokens) public view returns (uint256[] memory){
+  function batchUniPrices(address[] memory tokens) public view returns (uint256[] memory) {
     uint256[] memory prices = new uint256[](tokens.length);
     for(uint256 i = 0; i < tokens.length; i++) {
       prices[i] = getUniPrice(IUniswapV2Pair(tokens[i]));
@@ -127,7 +122,7 @@ contract ApyOracle {
     return prices;
   }
 
-  function batchTvl(address[] memory pool, address token, bool isUniswap) public view returns (uint256[] memory){
+  function batchTvl(address[] memory pool, address token, bool isUniswap) public view returns (uint256[] memory) {
     uint256[] memory tvl = new uint256[](pool.length);
     for(uint256 i = 0; i < pool.length; i++) {
       tvl[i] = getTvl(pool[i], token, isUniswap);
