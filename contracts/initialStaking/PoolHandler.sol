@@ -75,13 +75,13 @@ contract PoolHandler {
         token.mintForReferral(maintenancePool, protocolMaintenanceAmount);
         leftOverTaxRate = leftOverTaxRate.sub(protocolMaintenanceRate);
         }
-        // Dev Allocation
+        // Marketing Allocation
         {
-        uint256 devTaxRate = taxManager.getDevPoolRate();
-        uint256 devPoolAmount = balance.mul(devTaxRate).div(taxDivisor);
-        address devPool = taxManager.getDevPool();
-        token.mintForReferral(devPool, devPoolAmount);
-        leftOverTaxRate = leftOverTaxRate.sub(devTaxRate);
+        uint256 marketingTaxRate = taxManager.getMarketingTaxRate();
+        uint256 marketingAmount = balance.mul(marketingTaxRate).div(taxDivisor);
+        address marketingPool = taxManager.getDevPool();
+        token.mintForReferral(marketingPool, marketingAmount);
+        leftOverTaxRate = leftOverTaxRate.sub(marketingTaxRate);
         }
         // Reward Allocation
         {
@@ -91,13 +91,13 @@ contract PoolHandler {
         token.mintForReferral(rewardPool, rewardPoolAmount);
         leftOverTaxRate = leftOverTaxRate.sub(rewardTaxRate);
         }
-        // Revenue & Marketing Allocation
+        // Revenue & Dev Allocation
         {
         uint256 leftOverTax = balance.mul(leftOverTaxRate).div(taxDivisor);
         address revenuePool = taxManager.getRevenuePool();
-        address marketingPool = taxManager.getMaintenancePool();
+        address devPool = taxManager.getDevPool();
         token.mintForReferral(revenuePool, leftOverTax/2);
-        token.mintForReferral(marketingPool, leftOverTax/2);
+        token.mintForReferral(devPool, leftOverTax/2);
         }
     }
 }

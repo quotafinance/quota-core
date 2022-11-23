@@ -155,14 +155,6 @@ contract PoolEscrow {
                 }
             }
         }
-        // Dev Allocation
-        {
-        uint256 devTaxRate = taxManager.getDevPoolRate();
-        uint256 devPoolAmount = currentClaimable.mul(devTaxRate).div(taxDivisor);
-        address devPool = taxManager.getDevPool();
-        IETF(token).transferForRewards(devPool, devPoolAmount);
-        leftOverTaxRate = leftOverTaxRate.sub(devTaxRate);
-        }
         // Reward Allocation
         {
         uint256 rewardTaxRate = taxManager.getRewardPoolRate();
@@ -171,11 +163,13 @@ contract PoolEscrow {
         IETF(token).transferForRewards(rewardPool, rewardPoolAmount);
         leftOverTaxRate = leftOverTaxRate.sub(rewardTaxRate);
         }
-        // Revenue Allocation
+        // Dev Allocation & // Revenue Allocation
         {
         uint256 leftOverTax = currentClaimable.mul(leftOverTaxRate).div(taxDivisor);
+        address devPool = taxManager.getDevPool();
         address revenuePool = taxManager.getRevenuePool();
-        IETF(token).transferForRewards(revenuePool, leftOverTax);
+        IETF(token).transferForRewards(devPool, leftOverTax.div(2));
+        IETF(token).transferForRewards(revenuePool, leftOverTax.div(2));
         }
     }
 }

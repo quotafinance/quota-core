@@ -360,14 +360,6 @@ contract ReferralHandler {
                 }
             }
         }
-        // Dev Allocation
-        {
-        uint256 devTaxRate = taxManager.getDevPoolRate();
-        uint256 devPoolAmount = balanceDuringRebase.mul(devTaxRate).div(taxDivisor);
-        address devPool = taxManager.getDevPool();
-        token.mintForReferral(devPool, devPoolAmount);
-        leftOverTaxRate = leftOverTaxRate.sub(devTaxRate);
-        }
         // Reward Allocation
         {
         uint256 rewardTaxRate = taxManager.getRewardPoolRate();
@@ -376,11 +368,13 @@ contract ReferralHandler {
         token.mintForReferral(rewardPool, rewardPoolAmount);
         leftOverTaxRate = leftOverTaxRate.sub(rewardTaxRate);
         }
-        // Revenue Allocation
+        // Dev Allocation & // Revenue Allocation
         {
         uint256 leftOverTax = balanceDuringRebase.mul(leftOverTaxRate).div(taxDivisor);
+        address devPool = taxManager.getDevPool();
         address revenuePool = taxManager.getRevenuePool();
-        token.mintForReferral(revenuePool, leftOverTax);
+        token.mintForReferral(devPool, leftOverTax.div(2));
+        token.mintForReferral(revenuePool, leftOverTax.div(2));
         }
     }
 
@@ -464,14 +458,6 @@ contract ReferralHandler {
                 }
             }
         }
-        // Dev Allocation
-        {
-        uint256 devTaxRate = taxManager.getDevPoolRate();
-        uint256 devPoolAmount = currentClaimable.mul(devTaxRate).div(taxDivisor);
-        address devPool = taxManager.getDevPool();
-        token.transferForRewards(devPool, devPoolAmount);
-        leftOverTaxRate = leftOverTaxRate.sub(devTaxRate);
-        }
         // Reward Allocation
         {
         uint256 rewardTaxRate = taxManager.getRewardPoolRate();
@@ -480,11 +466,13 @@ contract ReferralHandler {
         token.transferForRewards(rewardPool, rewardPoolAmount);
         leftOverTaxRate = leftOverTaxRate.sub(rewardTaxRate);
         }
-        // Revenue Allocation
+        // Dev Allocation & // Revenue Allocation
         {
         uint256 leftOverTax = currentClaimable.mul(leftOverTaxRate).div(taxDivisor);
+        address devPool = taxManager.getDevPool();
         address revenuePool = taxManager.getRevenuePool();
-        token.transferForRewards(revenuePool, leftOverTax);
+        token.transferForRewards(devPool, leftOverTax.div(2));
+        token.transferForRewards(revenuePool, leftOverTax.div(2));
         }
     }
 }

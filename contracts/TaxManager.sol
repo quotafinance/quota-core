@@ -19,8 +19,9 @@ contract TaxManager {
     uint256 public maintenanceTaxRate;
     uint256 public protocolTaxRate;
     uint256 public perpetualPoolTaxRate;
-    uint256 public devPoolTaxRate;
+    // uint256 public devPoolTaxRate;
     uint256 public rewardPoolTaxRate;
+    uint256 public marketingTaxRate;
     uint256 public constant taxBaseDivisor = 10000;
     struct TaxRates {
         uint256 first;
@@ -181,13 +182,13 @@ contract TaxManager {
         return 0;
     }
 
-    function setDevPoolTaxRate(uint256 _devPoolRate) external {
-        devPoolTaxRate = _devPoolRate;
-    }
+    // function setDevPoolTaxRate(uint256 _devPoolRate) external {
+    //     devPoolTaxRate = _devPoolRate;
+    // }
 
-    function getDevPoolRate() external view returns (uint256) {
-        return devPoolTaxRate;
-    }
+    // function getDevPoolRate() external view returns (uint256) {
+    //     return devPoolTaxRate;
+    // }
 
     function setRewardPoolTaxRate(uint256 _rewardPoolRate) external {
         rewardPoolTaxRate = _rewardPoolRate;
@@ -204,6 +205,14 @@ contract TaxManager {
 
     function getTierPoolRate() external view returns (uint256) {
         return tierPoolRate;
+    }
+
+    function setMarketingTaxRate(uint256 _marketingTaxRate) external {
+        marketingTaxRate = _marketingTaxRate;
+    }
+
+    function getMarketingTaxRate() external view returns (uint256) {
+        return marketingTaxRate;
     }
 
 }
