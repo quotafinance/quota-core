@@ -6,10 +6,10 @@ import "./UniswapOracle.sol";
 
 contract Rebaser is BasicRebaser, UniswapOracle, ChainlinkOracle {
 
-  constructor (address token, address _treasury, address oracle, address _taxManager)
+  constructor (address router, address usdc, address wNative, address token, address _treasury, address oracle, address _taxManager)
   BasicRebaser(token, _treasury, _taxManager)
   ChainlinkOracle(oracle)
-  UniswapOracle(token) public {
+  UniswapOracle(router, usdc, wNative, token) public {
   }
 
 }
