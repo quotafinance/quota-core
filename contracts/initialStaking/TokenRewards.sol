@@ -3,9 +3,10 @@ pragma solidity ^0.5.0;
 import "../openzeppelin/Math.sol";
 import "./IRewardDistributionRecipient.sol";
 import "./LPTokenWrapper.sol";
+import "./StakingWhitelist.sol";
 import "./PoolEscrow.sol";
 
-contract TokenRewards is LPTokenWrapper, IRewardDistributionRecipient {
+contract TokenRewards is LPTokenWrapper, IRewardDistributionRecipient, StakingWhitelistable {
     IERC20 public snx;
     uint256 public constant DURATION = 14 days;
 
@@ -14,9 +15,9 @@ contract TokenRewards is LPTokenWrapper, IRewardDistributionRecipient {
     uint256 public rewardRate = 0;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
+    bool public onlyWhitelisted = true;
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
-    mapping(address => uint256) public lastWithdrawalTime;
 
     event RewardAdded(uint256 reward);
     event Staked(address indexed user, uint256 amount);
@@ -30,6 +31,11 @@ contract TokenRewards is LPTokenWrapper, IRewardDistributionRecipient {
             rewards[account] = earned(account);
             userRewardPerTokenPaid[account] = rewardPerTokenStored;
         }
+        _;
+    }
+
+    modifier checkWhitelistStatus(address account) {
+        require(isWhitelisted(account) == true || onlyWhitelisted == false, "Currently only Whitelisted Addresses can stake");
         _;
     }
 
@@ -75,10 +81,8 @@ contract TokenRewards is LPTokenWrapper, IRewardDistributionRecipient {
 
     // stake visibility is public as overriding LPTokenWrapper's stake() function
     // Duration here is in days
-    function stake(uint256 amount, uint256 duration) public updateReward(msg.sender) {
+    function stake(uint256 amount, uint256 duration) public updateReward(msg.sender) checkWhitelistStatus(msg.sender) {
         require(amount > 0, "Cannot stake 0");
-        if(lastWithdrawalTime[msg.sender] == 0)
-            lastWithdrawalTime[msg.sender] = block.timestamp;
         super.stake(amount, duration);
         emit Staked(msg.sender, amount);
         rewardDistribution.notifyStaked(msg.sender, amount);
@@ -100,7 +104,6 @@ contract TokenRewards is LPTokenWrapper, IRewardDistributionRecipient {
         uint256 reward = earned(msg.sender);
         if (reward > 0) {
             rewards[msg.sender] = 0;
-            lastWithdrawalTime[msg.sender] = block.timestamp;
             // the pool is distributing placeholder tokens with fixed supply
             snx.safeApprove(escrow, 0);
             snx.safeApprove(escrow, reward);
@@ -132,5 +135,17 @@ contract TokenRewards is LPTokenWrapper, IRewardDistributionRecipient {
     function setEscrow(address newEscrow) external onlyOwner {
         require(escrow == address(0), "escrow already set");
         escrow = newEscrow;
+    }
+
+    function whitelistAddress(address target) external onlyOwner {
+        _whitelistAccount(target);
+    }
+
+    function delistAddress(address target) external onlyOwner {
+        _delistAccount(target);
+    }
+
+    function setStatus(bool status) external onlyOwner {
+        onlyWhitelisted = status;
     }
 }
