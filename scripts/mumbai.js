@@ -65,11 +65,12 @@ async function main() {
     await nft.deployed();
     console.log("NFT deployed to:", nft.address);
 
+    await factory.setToken(etf.address);
     await factory.setNFTAddress(nft.address);
     await factory.setRebaser(rebaser.address);
     await factory.setTaxManager(taxmanager.address);
     await factory.setTierManager(tiermanager.address);
-    console.log("NFT, Rebaser, Tax Manager and Tier Manager addresses set in factory");
+    console.log("Token, NFT, Rebaser, Tax Manager and Tier Manager addresses set in factory");
 
     // quickswap router 0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff
     // usdc 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174
