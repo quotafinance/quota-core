@@ -142,7 +142,7 @@ contract TaxManager {
     }
 
     function getProtocolTaxRate() external view returns (uint256) {
-        return protocolTaxRate;
+        return protocolTaxRate + rightUpTaxRate;
     }
 
     function getTotalTaxAtMint() external view returns (uint256) {

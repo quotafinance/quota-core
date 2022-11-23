@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 
-import "./interfaces/IAPYOracle.sol";
-import "./interfaces/ITokenRewards.sol";
+import "../interfaces/IAPYOracle.sol";
+import "../interfaces/ITokenRewards.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-contract StakingPoolAggregator {
+contract TestStakingPoolAggregator {
 
     using SafeMath for uint256;
     address[] public pools;
@@ -48,8 +48,8 @@ contract StakingPoolAggregator {
         uint256 totalStaked = 0;
         for (uint i = 0; i < pools.length; i++) {
             uint256 lpStaked = getStakedLPForDuration(pools[i], user, stakedDuration);
-            uint256 tokenRatio = IAPYOracle(oracle).tokenPerLP(pools[i], token);
-            uint256 scaledTokens = (lpStaked.mul(tokenRatio)).div(1e18);
+            //uint256 tokenRatio = IAPYOracle(oracle).tokenPerLP(pools[i], token);
+            uint256 scaledTokens = lpStaked; //(lpStaked.mul(tokenRatio)).div(1e18);
             totalStaked = totalStaked.add(scaledTokens);
         }
         if(stakedRequirement <= totalStaked)

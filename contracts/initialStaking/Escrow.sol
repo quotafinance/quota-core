@@ -16,7 +16,8 @@ contract Escrow {
     _;
   }
 
-  constructor () public {
+  constructor (address _token) public {
+    token = _token;
     governance = msg.sender;
   }
 

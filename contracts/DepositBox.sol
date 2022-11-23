@@ -62,7 +62,7 @@ contract DepositBox {
         leftOverTaxRate = leftOverTaxRate.sub(perpetualTaxRate);
         address perpetualPool = taxManager.getPerpetualPool();
         IERC20(address(token)).safeApprove(perpetualPool, 0);
-        IERC20(address(token)).safeApprove(perpetualPool, 0);
+        IERC20(address(token)).safeApprove(perpetualPool, perpetualAmount);
         IPoolEscrow(perpetualPool).notifySecondaryTokens(perpetualAmount);
         }
         // Block Scoping to reduce local Variables spillage

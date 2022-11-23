@@ -230,7 +230,7 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
       totalTrackedTransfer[sender] = totalTrackedTransfer[sender].add(amount);
     }
 
-  function _checkForStaleData(address sender, uint256 timestamp) internal view returns (bool) {
+  function _checkForStaleData(address sender, uint256 timestamp) public view returns (bool) {
     if((lastTransferTime[sender] + 24 hours) > timestamp) {
       return true;
     }
@@ -250,7 +250,7 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
       previousTransfers = totalTrackedTransfer[sender];
     }
     uint256 transferLimitPercent = 0;
-    if (isTradePair(sender) || msg.sender == router ) {
+    if (isTradePair(sender)) {
       // This is to allow users to Add, Remove Liquidity to Uniswap/Quickswap pools without limit
       // Buying the token also has no limit, Selling is based on other conditions below
       // No case where both are true
@@ -515,6 +515,13 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
   onlyEmergency
   {
     factory = _factory;
+  }
+
+  function _setNFT(address _NFT)
+  external
+  onlyEmergency
+  {
+    NFT = _NFT;
   }
 
   function freezeTargetFunds(address target)

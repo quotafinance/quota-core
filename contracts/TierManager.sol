@@ -16,8 +16,6 @@ contract TierManager {
         uint256 tierOne;
         uint256 tierTwo;
         uint256 tierThree;
-        uint256 tierFour;
-        uint256 tierFive;
     }
 
     address public admin;

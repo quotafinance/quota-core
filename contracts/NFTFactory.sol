@@ -71,7 +71,6 @@ contract NFTFactory {
         emit LevelChange(msg.sender, oldTier, newTier);
     }
 
-
     function alertSelfTaxClaimed(uint256 amount, uint256 timestamp) external { // All the handlers notify the Factory when the claim self tax
         require(isHandler(msg.sender) == true);
         emit SelfTaxClaimed(msg.sender, amount, timestamp);
@@ -80,14 +79,6 @@ contract NFTFactory {
     function alertReferralClaimed(uint256 amount, uint256 timestamp) external { // All the handlers notify the Factory when the claim referral Reward
         require(isHandler(msg.sender) == true);
         emit RewardClaimed(msg.sender, amount, timestamp);
-    }
-
-    function setNFTAddress(address _NFT) onlyAdmin external {
-        NFT = IMembershipNFT(_NFT); // Set address of the NFT contract
-    }
-
-    function setDefaultURI(string memory _tokenURI) onlyAdmin public {
-        tokenURI = _tokenURI;
     }
 
     function getRebaser() external view returns(address) {
@@ -106,6 +97,13 @@ contract NFTFactory {
         return tierManager;
     }
 
+    function setDefaultURI(string memory _tokenURI) onlyAdmin public {
+        tokenURI = _tokenURI;
+    }
+
+    function setNFTAddress(address _NFT) onlyAdmin external {
+        NFT = IMembershipNFT(_NFT); // Set address of the NFT contract
+    }
 
     function setRebaser(address _rebaser) onlyAdmin external {
         rebaser = _rebaser; // Set address of the Rebaser contract
