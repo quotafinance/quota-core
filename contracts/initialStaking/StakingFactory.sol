@@ -27,7 +27,7 @@ contract StakingFactory {
         address escrowToken = address(new EscrowToken(amount));
         address stakingPool = address(new TokenRewards(escrowToken, lp));
         pools.push(stakingPool);
-        IERC20(escrowToken).transfer(stakingPool, amount * 1e18);
+        IERC20(escrowToken).transfer(stakingPool, amount);
         address poolEscrow = address(new PoolEscrow(escrowToken, stakingPool, token, nftFactory));
         TokenRewards(stakingPool).setEscrow(poolEscrow);
         TokenRewards(stakingPool).setRewardDistribution(notifier);
