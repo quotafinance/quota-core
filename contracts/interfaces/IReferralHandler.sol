@@ -12,4 +12,6 @@ interface IReferralHandler {
     function getTransferLimit() external view returns(uint256);
     function updateReferralTree(uint256 depth, uint256 NFTtier) external;
     function addToReferralTree(uint256 depth, address referred, uint256 NFTtier) external;
+    function mintForRewarder(address recipient, uint256 amount ) external;
+    function alertFactory(uint256 reward, uint256 timestamp) external;
 }

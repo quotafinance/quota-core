@@ -18,6 +18,7 @@ contract NFTFactory {
     address public token;
     address public handlerImplementation;
     address public depositBoxImplementation;
+    address public rewarder;
     mapping(uint256 => address) NFTToHandler;
     mapping(address => uint256) HandlerToNFT;
     mapping(uint256 => address) NFTToDepositBox;
@@ -93,12 +94,20 @@ contract NFTFactory {
         return taxManager;
     }
 
+    function getRewarder() external view returns(address) {
+        return rewarder;
+    }
+
     function getTierManager() external view returns(address) {
         return tierManager;
     }
 
     function setDefaultURI(string memory _tokenURI) onlyAdmin public {
         tokenURI = _tokenURI;
+    }
+
+    function setRewarder(address _rewarder) onlyAdmin public {
+        rewarder = _rewarder;
     }
 
     function setNFTAddress(address _NFT) onlyAdmin external {

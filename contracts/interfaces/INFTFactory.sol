@@ -10,5 +10,6 @@ interface INFTFactory {
     function getTierManager() external view returns(address);
     function getTaxManager() external view returns(address);
     function getRebaser() external view returns(address);
+    function getRewarder() external view returns(address);
     function getHandlerForUser(address) external view returns (address);
 }

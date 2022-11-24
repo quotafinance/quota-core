@@ -50,7 +50,7 @@ contract BasicRebaser {
 
   uint256 public nextRebase = 0; // Wednesday November 25, 2020 09:00:00 (am) in time zone Asia/Seoul (KST)
   uint256 public constant REBASE_DELAY = WINDOW_SIZE * 1 hours;
-  IUniswapV2Pair public constant UNIPAIR = IUniswapV2Pair(0x95a5543111343aB2A66a06bc663a1170AcF050b9);
+  IUniswapV2Pair public UNIPAIR;
 
   modifier onlyGov() {
     require(msg.sender == governance, "only gov");
@@ -62,6 +62,10 @@ contract BasicRebaser {
     secondaryPool = _secondaryPool;
     taxManager = ITaxManager(_taxManager);
     governance = msg.sender;
+  }
+
+  function setPair(address _uniswapPair) public onlyGov {
+    UNIPAIR = IUniswapV2Pair(_uniswapPair);
   }
 
   function getPositiveEpochCount() public view returns (uint256) {
