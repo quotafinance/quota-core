@@ -11,7 +11,7 @@ import "./token/BalanceManagement.sol";
 import "./token/Frozen.sol";
 import "./token/Whitelistable.sol";
 import "./token/TradePair.sol";
-
+import "hardhat/console.sol";
 
 contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
 
@@ -34,8 +34,8 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
   }
 
   modifier _beforeTokenTransfer(address from, address to, uint256 value) {
-    _;
     updateTransferLimit(from, to, value);
+    _;
   }
 
   modifier onlyMinter() {
@@ -231,7 +231,7 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
     }
 
   function _checkForStaleData(address sender, uint256 timestamp) public view returns (bool) {
-    if((lastTransferTime[sender] + 24 hours) > timestamp) {
+    if((lastTransferTime[sender] + 24 hours) < timestamp) {
       return true;
     }
     return false;
@@ -272,7 +272,7 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
       }
       if(balanceOnFirstTransfer == 0)
         balanceOnFirstTransfer = _etfBalances[sender];
-      uint256 etfValueBalance = fragmentToETF(balanceOnFirstTransfer);
+      uint256 etfValueBalance =  balanceOnFirstTransfer;
       uint256 totalTransferLimit = etfValueBalance.mul(transferLimitPercent).div(100);
       uint256 etfValueAmount = fragmentToETF(amount);
       require(previousTransfers.add(etfValueAmount) <= totalTransferLimit, "Transfer above daily limit");
