@@ -33,7 +33,7 @@ contract TierManager {
         admin = msg.sender;
     }
 
-    function setStakingPool(address oracle) public onlyAdmin {
+    function setStakingAggregator(address oracle) public onlyAdmin {
         stakingPool = IStakingPoolAggregator(oracle);
     }
 

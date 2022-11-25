@@ -8,7 +8,6 @@ import "../interfaces/INFTFactoryOld.sol";
 import "../interfaces/IReferralHandlerOld.sol";
 import "../interfaces/IETF.sol";
 
-
 contract PoolEscrow {
 
     using SafeERC20 for IERC20;
@@ -75,7 +74,7 @@ contract PoolEscrow {
         ITaxManager taxManager = ITaxManager(INFTFactory(factory).getTaxManager());
         uint256 leftOverTaxRate = protocolTaxRate;
         address handler = INFTFactory(factory).getHandlerForUser(owner);
-        address [] memory referral; // Used to store above referrals, saving variable space
+        address [5] memory referral; // Used to store above referrals, saving variable space
         // User Distribution
         // Block Scoping to reduce local Variables spillage
         {
