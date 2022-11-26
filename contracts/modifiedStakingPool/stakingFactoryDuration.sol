@@ -3,7 +3,7 @@ import "./TokenRewardsDuration.sol";
 
 pragma solidity 0.5.16;
 
-contract StakingFactory {
+contract StakingFactoryDuration {
 
     address public token;
     address public nftFactory;

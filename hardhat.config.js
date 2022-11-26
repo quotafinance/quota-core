@@ -65,7 +65,7 @@ module.exports = {
         auto: true,
         interval: 0,
       },
-      loggingEnabled: true,
+      //loggingEnabled: true,
       blockGasLimit: 12000000,
     },
     ropsten: {
