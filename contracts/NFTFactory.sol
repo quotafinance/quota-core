@@ -142,6 +142,7 @@ contract NFTFactory {
         NFTToDepositBox[nftID] = address(depositBox);
         HandlerToNFT[address(handler)] = nftID;
         handlerStorage[address(handler)] = true;
+        handlerStorage[address(depositBox)] = true; // Required to allow it fully transfer the collected rewards without limit
         addToReferrersAbove(1, address(handler));
         emit NewIssuance(nftID, address(handler), address(depositBox));
         return address(handler);

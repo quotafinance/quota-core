@@ -7,10 +7,9 @@ import "./interfaces/IRebaserNew.sol";
 import "./interfaces/IETFNew.sol";
 import "./interfaces/ITaxManager.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-
 contract Rewarder {
     using SafeMath for uint256;
-    uint256 public BASE = 10000;
+    uint256 public BASE = 1e18;
 
     function getRebaser(address factory) public view returns (IRebaser) {
         address rebaser = INFTFactory(factory).getRebaser() ;
@@ -28,15 +27,16 @@ contract Rewarder {
         ITaxManager taxManager =  getTaxManager(factory);
         uint256 protocolTaxRate = taxManager.getProtocolTaxRate();
         uint256 taxDivisor = taxManager.getTaxBaseDivisor();
-        uint256 rebaseRate = getRebaser(factory).getDeltaForPositiveEpoch(claimedEpoch.add(1)); // Check for next epoch
+        uint256 rebaseRate = getRebaser(factory).getDeltaForPositiveEpoch(claimedEpoch);
         address handler = msg.sender;
         address owner = IReferralHandler(handler).ownedBy();
         if(rebaseRate != 0) {
-            uint256 blockForRebase = getRebaser(factory).getBlockForPositiveEpoch(claimedEpoch.add(1));
+            uint256 blockForRebase = getRebaser(factory).getBlockForPositiveEpoch(claimedEpoch);
             uint256 balanceDuringRebase = IETF(token).getPriorBalance(owner, blockForRebase); // We deal only with underlying balances
+            balanceDuringRebase = balanceDuringRebase.div(1e6); // 4.0 token internally stores 1e24 not 1e18
             uint256 expectedBalance = balanceDuringRebase.mul(BASE.add(rebaseRate)).div(BASE);
             uint256 balanceToMint = expectedBalance.sub(balanceDuringRebase);
-            handleSelfTax(factory, handler, balanceToMint, protocolTaxRate, taxDivisor);
+            handleSelfTax(handler, factory, balanceToMint, protocolTaxRate, taxDivisor);
             uint256 rightUpTaxRate = taxManager.getRightUpTaxRate();
             if(rightUpTaxRate != 0)
                 handleRightUpTax(handler, factory, balanceToMint, rightUpTaxRate, protocolTaxRate, taxDivisor);
@@ -52,11 +52,12 @@ contract Rewarder {
         uint256 protocolTaxed = taxedAmountReward.mul(protocolTaxRate).div(divisor);
         uint256 reward = taxedAmountReward.sub(protocolTaxed);
         IReferralHandler(handler).mintForRewarder(owner, reward);
-        INFTFactory(factory).alertSelfTaxClaimed(reward, block.timestamp);
+        IReferralHandler(handler).alertFactory(reward, block.timestamp);
         IReferralHandler(handler).mintForRewarder(taxManager.getSelfTaxPool(), protocolTaxed);
     }
 
     function handleRightUpTax(address handler,address factory, uint256 balance, uint256 taxRate, uint256 protocolTaxRate,  uint256 divisor) internal {
+
         ITaxManager taxManager =  getTaxManager(factory);
         uint256 taxedAmountReward = balance.mul(taxRate).div(divisor);
         uint256 protocolTaxed = taxedAmountReward.mul(protocolTaxRate).div(divisor);
@@ -71,7 +72,7 @@ contract Rewarder {
         uint256 perpetualTaxRate = taxManager.getPerpetualPoolTaxRate();
         uint256 leftOverTaxRate = protocolTaxRate.sub(perpetualTaxRate); // Taxed and minted on rebase
         leftOverTaxRate = leftOverTaxRate.sub(rightUpTaxRate); // Tax and minted in function above
-        address [] memory referral; // Used to store above referrals, saving variable space
+        address [5] memory referral; // Used to store above referrals, saving variable space
         // Block Scoping to reduce local Variables spillage
         {
         uint256 protocolMaintenanceRate = taxManager.getMaintenanceTaxRate();

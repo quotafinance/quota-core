@@ -11,7 +11,6 @@ import "./token/BalanceManagement.sol";
 import "./token/Frozen.sol";
 import "./token/Whitelistable.sol";
 import "./token/TradePair.sol";
-import "hardhat/console.sol";
 
 contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
 

@@ -47,7 +47,7 @@ contract DepositBox {
         uint256 taxDivisor = taxManager.getTaxBaseDivisor();
         uint256 leftOverTaxRate = protocolTaxRate;
         address _handler = address(handler);
-        address [] memory referral; // Used to store above referrals, saving variable space
+        address [5] memory referral; // Used to store above referrals, saving variable space
         // User Distribution
         // Block Scoping to reduce local Variables spillage
         {

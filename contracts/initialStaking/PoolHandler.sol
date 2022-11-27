@@ -15,19 +15,17 @@ contract PoolHandler {
     IETF public token;
     IRebaser public rebaser;
     address public pool;
-    uint256 constant BASE = 10000;
+    uint256 constant BASE = 1e18;
     uint256 claimedEpoch; // Contructor sets the latest positive Epoch, to keep count of future epochs that need to be claimed
 
     constructor(
         address _pool,
-        address _admin,
         address _rebaser,
         uint256 _epoch,
         address _token,
         address _factory
     ) {
         pool = _pool;
-        admin = _admin;
         claimedEpoch = _epoch;
         rebaser = IRebaser(_rebaser);
         token = IETF(_token);
@@ -37,11 +35,12 @@ contract PoolHandler {
     function transferTax() external {
         uint256 currentEpoch = rebaser.getPositiveEpochCount();
         if (claimedEpoch < currentEpoch) {
-            uint256 rebaseRate = rebaser.getDeltaForPositiveEpoch(claimedEpoch.add(1)); // Check for next epoch
             claimedEpoch++;
+            uint256 rebaseRate = rebaser.getDeltaForPositiveEpoch(claimedEpoch);
             if(rebaseRate != 0) {
-                uint256 blockForRebase = rebaser.getBlockForPositiveEpoch(claimedEpoch.add(1));
-                uint256 balanceDuringRebase = token.getPriorBalance(address(this), blockForRebase);
+                uint256 blockForRebase = rebaser.getBlockForPositiveEpoch(claimedEpoch);
+                uint256 balanceDuringRebase = token.getPriorBalance(address(this), blockForRebase); // We deal only with underlying balances
+                balanceDuringRebase = balanceDuringRebase.div(1e6); // 4.0 token internally stores 1e24 not 1e18
                 uint256 expectedBalance = balanceDuringRebase.mul(BASE.add(rebaseRate)).div(BASE);
                 uint256 balanceToMint = expectedBalance.sub(balanceDuringRebase);
                 distributeTax(balanceToMint);
