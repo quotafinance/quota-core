@@ -1,10 +1,11 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { parseEther } = require("ethers/lib/utils");
+const { parseEther, formatEther } = require("ethers/lib/utils");
 const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 const uniswapABI = require("../uniswapABI.json");
 const uniswapRouterABI = require("../uniswapRouter.json");
 const uniPairABI = require("../uniPairABI.json");
+const { parse } = require("dotenv");
 
 const uniswapRouterAddress = "0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff";
 const zeroAddress = "0x0000000000000000000000000000000000000000";
@@ -229,7 +230,7 @@ describe("Token contract", function () {
 
     return {ownerAccount, etf, taxmanager, tiermanager,
       rebaser, handler, factory, nft, stakingaggregator,
-      notifier, stakingfactory,
+      notifier, stakingfactory, uniswapFactory,
       uniswapRouter, secondAccount,
       wMATIC, wETH, USDC, extension
     };
@@ -332,6 +333,43 @@ describe("Token contract", function () {
     );
     await uniswapAddLiquidityTx2.wait();
     console.log("ETF/WETH added");
+  })
+  it("Create LP Pool with native token using extension, no whitelisting of user", async function () {
+    const {ownerAccount, wMATIC, wETH, nft,
+      uniswapRouter, uniswapFactory,factory, extension,
+       etf } = await loadFixture(
+      deployTokenFixture
+    );
+    await factory.mint(zeroAddress);
+    // ADD LIQUIDITY ETF/WETH
+    await etf.approve(uniswapRouterAddress, parseEther('5000'));
+    await expect(uniswapRouter.addLiquidityETH(
+      etf.address,
+      parseEther('5000'),
+      parseEther('5000'),
+      parseEther('1'),
+      ownerAccount.address,
+      Date.now(),
+      {value: parseEther('1')}
+    )).to.be.revertedWith("TransferHelper: TRANSFER_FROM_FAILED");
+    await etf.whitelistAddress(extension.address);
+    await etf.approve(extension.address, parseEther('5000'));
+    const uniswapAddLiquidityTx2 = await extension.addLiquidityETH(
+        etf.address,
+        parseEther('5000'),
+        parseEther('5000'),
+        parseEther('1'),
+        {value: parseEther('5')},
+    );
+    await uniswapAddLiquidityTx2.wait();
+    console.log("ETF/wMatic added");
+    const nativePair = await uniswapFactory.getPair(
+      etf.address,
+      wMaticAddress
+    );
+    expect(await etf.balanceOf(nativePair)).to.equal(parseEther('5000'));
+    const balance = await ethers.provider.getBalance(ownerAccount.address);
+    console.log(formatEther(balance));
   })
 })
 
