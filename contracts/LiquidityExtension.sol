@@ -72,8 +72,7 @@ contract LiquidityExtension {
             amountTokenDesired
         );
         IERC20(token).approve(router, amountTokenDesired);
-        (, uint amountETH,) = Router(router)
-            .addLiquidityETH{value: amountETHMin}(
+        (, uint amountETH, ) = Router(router).addLiquidityETH{value: msg.value}(
             token,
             amountTokenDesired,
             amountTokenMin,
