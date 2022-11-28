@@ -39,7 +39,7 @@ contract BasicRebaser {
   uint256 public counter = 0;
   uint256 public epoch = 1;
   uint256 public positiveEpochCount = 0;
-  uint256 public positiveRebaseLimit = 750; // 7.5% by default
+  uint256 public positiveRebaseLimit = 700; // 7.0% by default
   uint256 public negativeRebaseLimit = 350; // 3.5% by default
   uint256 public constant basisBase = 10000; // 100%
   ITaxManager public taxManager;
@@ -48,9 +48,9 @@ contract BasicRebaser {
   address public secondaryPool;
   address public governance;
 
-  uint256 public nextRebase = 0; // Wednesday November 25, 2020 09:00:00 (am) in time zone Asia/Seoul (KST)
+  uint256 public nextRebase = 0; // Tuesday, November 29, 2022 12:00:00 AM GMT
   uint256 public constant REBASE_DELAY = WINDOW_SIZE * 1 hours;
-  IUniswapV2Pair public UNIPAIR;
+  IUniswapV2Pair public uniswapSyncer;
 
   modifier onlyGov() {
     require(msg.sender == governance, "only gov");
@@ -65,7 +65,7 @@ contract BasicRebaser {
   }
 
   function setPair(address _uniswapPair) public onlyGov {
-    UNIPAIR = IUniswapV2Pair(_uniswapPair);
+    uniswapSyncer = IUniswapV2Pair(_uniswapPair);
   }
 
   function getPositiveEpochCount() public view returns (uint256) {
@@ -94,7 +94,7 @@ contract BasicRebaser {
   }
 
   function setRebaseLimit(uint256 _limit, bool positive) external onlyGov {
-    require(500 <= _limit && _limit <= 2500); // 5% to 25%
+    require(_limit <= 2500); // 0% to 25%
       if(positive)
         positiveRebaseLimit = _limit;
       else
@@ -124,6 +124,49 @@ contract BasicRebaser {
       // we leave at least the specified period between two updates
       return;
     }
+
+    (bool successSNP, uint256 priceSNP) = getPriceSNP();
+    (bool successETF, uint256 priceETF) = getPriceETF();
+    if (!successETF) {
+      // price of ETF was not returned properly
+      emit NoUpdateETF();
+      return;
+    }
+    if (!successSNP) {
+      // price of SNP was not returned properly
+      emit NoUpdateSNP();
+      return;
+    }
+    lastUpdate = block.timestamp;
+
+    if (noPending) {
+      // we start recording with 1 hour delay
+      pendingSNPPrice = priceSNP;
+      pendingETFPrice = priceETF;
+      noPending = false;
+    } else if (counter < WINDOW_SIZE) {
+      // still in the warming up phase
+      averageSNP = averageSNP.mul(counter).add(pendingSNPPrice).div(counter.add(1));
+      averageETF = averageETF.mul(counter).add(pendingETFPrice).div(counter.add(1));
+      pricesSNP[counter] = pendingSNPPrice;
+      pricesETF[counter] = pendingETFPrice;
+      pendingSNPPrice = priceSNP;
+      pendingETFPrice = priceETF;
+      counter++;
+    } else {
+      uint256 index = counter % WINDOW_SIZE;
+      averageSNP = averageSNP.mul(WINDOW_SIZE).sub(pricesSNP[index]).add(pendingSNPPrice).div(WINDOW_SIZE);
+      averageETF = averageETF.mul(WINDOW_SIZE).sub(pricesETF[index]).add(pendingETFPrice).div(WINDOW_SIZE);
+      pricesSNP[index] = pendingSNPPrice;
+      pricesETF[index] = pendingETFPrice;
+      pendingSNPPrice = priceSNP;
+      pendingETFPrice = priceETF;
+      counter++;
+    }
+    emit Updated(pendingSNPPrice, pendingETFPrice);
+  }
+
+    function immediateRecordPrice() public onlyGov {
 
     (bool successSNP, uint256 priceSNP) = getPriceSNP();
     (bool successETF, uint256 priceETF) = getPriceETF();
@@ -225,7 +268,7 @@ contract BasicRebaser {
         address perpetualPool = taxManager.getPerpetualPool();
         IETF(etf).mint(perpetualPool, secondaryPoolBudget);
       }
-      UNIPAIR.sync();
+      uniswapSyncer.sync();
       epoch++;
 
     } else if (averageETF < lowThreshold) {
@@ -242,7 +285,7 @@ contract BasicRebaser {
       // delta = 100 - (desiredSupply / currentSupply) * 100
       uint256 delta = uint256(BASE).sub(desiredSupply.mul(BASE).div(currentSupply));
       IETF(etf).rebase(epoch, delta, false);
-      UNIPAIR.sync();
+      uniswapSyncer.sync();
       epoch++;
     } else {
       // else the price is within bounds
@@ -253,7 +296,7 @@ contract BasicRebaser {
   /**
   * Calculates how a rebase would look if it was triggered now.
   */
-  function calculateRealTimeRebase() public view returns (uint256, uint256) {
+  function calculateRealTimeRebasePreTax() public view returns (uint256, uint256) {
     // only rebase if there is a 5% difference between the price of SNP and ETF
     uint256 highThreshold = averageSNP.mul(105).div(100);
     uint256 lowThreshold = averageSNP.mul(95).div(100);
@@ -265,7 +308,9 @@ contract BasicRebaser {
       uint256 realAdjustment = increase.mul(BASE).div(factor);
       uint256 currentSupply = IERC20(etf).totalSupply();
       uint256 desiredSupply = currentSupply.add(currentSupply.mul(realAdjustment).div(BASE));
-
+      uint256 upperLimit = currentSupply.mul(basisBase.add(positiveRebaseLimit)).div(basisBase);
+      if(desiredSupply > upperLimit) // Increase expected rebase is above the limit
+        desiredSupply = upperLimit;
       uint256 secondaryPoolBudget = desiredSupply.sub(currentSupply).mul(10).div(100);
       desiredSupply = desiredSupply.sub(secondaryPoolBudget);
 
@@ -280,7 +325,9 @@ contract BasicRebaser {
       uint256 realAdjustment = increase.mul(BASE).div(factor);
       uint256 currentSupply = IERC20(etf).totalSupply();
       uint256 desiredSupply = currentSupply.sub(currentSupply.mul(realAdjustment).div(BASE));
-
+      uint256 lowerLimit = currentSupply.mul(basisBase.sub(negativeRebaseLimit)).div(basisBase);
+      if(desiredSupply < lowerLimit) // Decrease expected rebase is below the limit
+        desiredSupply = lowerLimit;
       // Cannot overflow as desiredSupply < currentSupply
       // delta = 100 - (desiredSupply / currentSupply) * 100
       uint256 delta = uint256(BASE).sub(desiredSupply.mul(BASE).div(currentSupply));
