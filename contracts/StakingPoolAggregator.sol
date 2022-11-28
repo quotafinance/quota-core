@@ -24,6 +24,10 @@ contract StakingPoolAggregator {
         _;
     }
 
+    function getPools() public view returns(address[] memory) {
+        return pools;
+    }
+
     function setAPYOracle(address _oracle) onlyAdmin public {
         oracle = _oracle;
     }
@@ -48,7 +52,8 @@ contract StakingPoolAggregator {
         uint256 totalStaked = 0;
         for (uint i = 0; i < pools.length; i++) {
             uint256 lpStaked = getStakedLPForDuration(pools[i], user, stakedDuration);
-            uint256 tokenRatio = IAPYOracle(oracle).tokenPerLP(pools[i], token);
+            address lpAddress = ITokenRewards(pools[i]).uni();
+            uint256 tokenRatio = IAPYOracle(oracle).tokenPerLP(lpAddress, token);
             uint256 scaledTokens = (lpStaked.mul(tokenRatio)).div(1e18);
             totalStaked = totalStaked.add(scaledTokens);
         }

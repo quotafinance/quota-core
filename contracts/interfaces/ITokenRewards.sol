@@ -7,4 +7,5 @@ interface ITokenRewards {
     function balanceOf(address account) external view returns (uint256);
     function unlocksAt(address account) external view returns (uint256);
     function latestLockDuration(address account) external view returns (uint256);
+    function uni() external view returns(address);
 }
