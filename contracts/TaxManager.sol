@@ -37,9 +37,13 @@ contract TaxManager {
         _;
     }
 
+    constructor() {
+        admin = msg.sender;
+    }
+
     // Getters and setters for Addresses
 
-    function setSelfTaxPool(address _selfTaxPool) external {
+    function setSelfTaxPool(address _selfTaxPool) external onlyAdmin {
         selfTaxPool = _selfTaxPool;
     }
 
@@ -47,7 +51,7 @@ contract TaxManager {
         return selfTaxPool;
     }
 
-    function setRightUpTaxPool(address _rightUpTaxPool) external {
+    function setRightUpTaxPool(address _rightUpTaxPool) external onlyAdmin {
         rightUpTaxPool = _rightUpTaxPool;
     }
 
@@ -55,7 +59,7 @@ contract TaxManager {
         return rightUpTaxPool;
     }
 
-    function setMaintenancePool(address _maintenancePool) external {
+    function setMaintenancePool(address _maintenancePool) external onlyAdmin {
         maintenancePool = _maintenancePool;
     }
 
@@ -63,7 +67,7 @@ contract TaxManager {
         return maintenancePool;
     }
 
-    function setDevPool(address _devPool) external {
+    function setDevPool(address _devPool) external onlyAdmin {
         devPool = _devPool;
     }
 
@@ -71,7 +75,7 @@ contract TaxManager {
         return devPool;
     }
 
-    function setRewardAllocationPool(address _rewardAllocationPool) external {
+    function setRewardAllocationPool(address _rewardAllocationPool) external onlyAdmin {
         rewardAllocationPool = _rewardAllocationPool;
     }
 
@@ -79,7 +83,7 @@ contract TaxManager {
         return rewardAllocationPool;
     }
 
-    function setPerpetualPool(address _perpetualPool) external {
+    function setPerpetualPool(address _perpetualPool) external onlyAdmin {
         perpetualPool = _perpetualPool;
     }
 
@@ -87,7 +91,7 @@ contract TaxManager {
         return perpetualPool;
     }
 
-    function setTierPool(address _tierPool) external {
+    function setTierPool(address _tierPool) external onlyAdmin {
         tierPool = _tierPool;
     }
 
@@ -95,7 +99,7 @@ contract TaxManager {
         return tierPool;
     }
 
-    function setMarketingPool(address _marketingPool) external {
+    function setMarketingPool(address _marketingPool) external onlyAdmin {
         marketingPool = _marketingPool;
     }
 
@@ -103,7 +107,7 @@ contract TaxManager {
         return marketingPool;
     }
 
-    function setRevenuePool(address _revenuePool) external {
+    function setRevenuePool(address _revenuePool) external onlyAdmin {
         revenuePool = _revenuePool;
     }
 
@@ -114,7 +118,7 @@ contract TaxManager {
 
     // Getters and setters for the Tax Rates
 
-    function setSelfTaxRate(uint256 _selfTaxRate) external {
+    function setSelfTaxRate(uint256 _selfTaxRate) external onlyAdmin {
         selfTaxRate = _selfTaxRate;
     }
 
@@ -122,7 +126,7 @@ contract TaxManager {
         return selfTaxRate;
     }
 
-    function setRightUpTaxRate(uint256 _rightUpTaxRate) external {
+    function setRightUpTaxRate(uint256 _rightUpTaxRate) external onlyAdmin {
         rightUpTaxRate = _rightUpTaxRate;
     }
 
@@ -130,7 +134,7 @@ contract TaxManager {
         return rightUpTaxRate;
     }
 
-    function setMaintenanceTaxRate(uint256 _maintenanceTaxRate) external {
+    function setMaintenanceTaxRate(uint256 _maintenanceTaxRate) external onlyAdmin {
         maintenanceTaxRate = _maintenanceTaxRate;
     }
 
@@ -138,7 +142,7 @@ contract TaxManager {
         return maintenanceTaxRate;
     }
 
-    function setProtocolTaxRate(uint256 _protocolTaxRate) external {
+    function setProtocolTaxRate(uint256 _protocolTaxRate) external onlyAdmin {
         protocolTaxRate = _protocolTaxRate;
     }
 
@@ -150,7 +154,7 @@ contract TaxManager {
         return protocolTaxRate + rightUpTaxRate + selfTaxRate;
     }
 
-    function setPerpetualPoolTaxRate(uint256 _perpetualPoolTaxRate) external {
+    function setPerpetualPoolTaxRate(uint256 _perpetualPoolTaxRate) external onlyAdmin {
         perpetualPoolTaxRate = _perpetualPoolTaxRate;
     }
 
@@ -162,7 +166,7 @@ contract TaxManager {
         return taxBaseDivisor;
     }
 
-    function setBulkReferralRate(uint256 tier, uint256 first, uint256 second, uint256 third, uint256 fourth) external {
+    function setBulkReferralRate(uint256 tier, uint256 first, uint256 second, uint256 third, uint256 fourth) external onlyAdmin {
         referralRate[tier].first = first;
         referralRate[tier].second = second;
         referralRate[tier].third = third;
@@ -190,7 +194,7 @@ contract TaxManager {
     //     return devPoolTaxRate;
     // }
 
-    function setRewardPoolTaxRate(uint256 _rewardPoolRate) external {
+    function setRewardPoolTaxRate(uint256 _rewardPoolRate) external onlyAdmin {
         rewardPoolTaxRate = _rewardPoolRate;
     }
 
@@ -199,7 +203,7 @@ contract TaxManager {
     }
 
 
-    function setTierPoolRate(uint256 _tierPoolRate) external {
+    function setTierPoolRate(uint256 _tierPoolRate) external onlyAdmin {
         tierPoolRate = _tierPoolRate;
     }
 
@@ -207,7 +211,7 @@ contract TaxManager {
         return tierPoolRate;
     }
 
-    function setMarketingTaxRate(uint256 _marketingTaxRate) external {
+    function setMarketingTaxRate(uint256 _marketingTaxRate) external onlyAdmin {
         marketingTaxRate = _marketingTaxRate;
     }
 
