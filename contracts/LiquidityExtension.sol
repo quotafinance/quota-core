@@ -31,9 +31,16 @@ interface Router {
 
 contract LiquidityExtension {
     address public router;
+    address public admin;
 
     constructor(address _router) {
         router = _router;
+        admin = msg.sender;
+    }
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "only Admin");
+        _;
     }
 
     function addLiquidity(
@@ -58,6 +65,10 @@ contract LiquidityExtension {
             msg.sender,
             block.timestamp + 10 minutes
         );
+        uint256 balanceA = IERC20(tokenA).balanceOf(address(this));
+        IERC20(tokenA).transfer(msg.sender, balanceA);
+        uint256 balanceB = IERC20(tokenB).balanceOf(address(this));
+        IERC20(tokenB).transfer(msg.sender, balanceB);
     }
 
     function addLiquidityETH(
@@ -80,6 +91,8 @@ contract LiquidityExtension {
             msg.sender,
             block.timestamp + 10 minutes
         );
+        uint256 balance = IERC20(token).balanceOf(address(this));
+        IERC20(token).transfer(msg.sender, balance);
         if (msg.value > amountETH)
             transferDust();
     }
@@ -87,5 +100,17 @@ contract LiquidityExtension {
     function transferDust() internal {
         address liquidityProvider = msg.sender;
         payable(liquidityProvider).transfer(address(this).balance);
+    }
+
+    // Recovery functions incase assets are stuck in the contract
+    function recoverLeftoverTokens(address token, address benefactor)
+    public onlyAdmin
+    {
+        uint256 leftOverBalance = IERC20(token).balanceOf(address(this));
+        IERC20(token).transfer(benefactor, leftOverBalance);
+    }
+
+    function recoverNativeToken(address benefactor) public onlyAdmin {
+        payable(benefactor).transfer(address(this).balance);
     }
 }
