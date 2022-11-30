@@ -65,8 +65,9 @@ module.exports = {
         auto: true,
         interval: 0,
       },
-      //loggingEnabled: true,
+      loggingEnabled: true,
       blockGasLimit: 12000000,
+      accounts: [{privateKey: `${ROPSTEN_PRIVATE_KEY}`, balance: '100000000000000000000'}]
     },
     ropsten: {
       url: `https://ropsten.infura.io/v3/${INFURA_API_KEY}`,
@@ -78,6 +79,7 @@ module.exports = {
     },
     mumbai: {
       url: `https://polygon-mumbai.infura.io/v3/${INFURA_API_KEY}`,
+      gasPrice: 90000000000,
       accounts: [`${ROPSTEN_PRIVATE_KEY}`]
     },
     polygon: {
