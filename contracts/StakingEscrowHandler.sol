@@ -6,7 +6,7 @@ import "./interfaces/IRebaserNew.sol";
 import "./interfaces/IETFNew.sol";
 import "./interfaces/INFTFactory.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-contract PoolHandler {
+contract StakingEscrowHandler {
 
     using SafeMath for uint256;
     address public admin;
