@@ -1,12 +1,12 @@
 pragma solidity ^0.5.0;
 
 import "../openzeppelin/Math.sol";
-import "./IRewardDistributionRecipient.sol";
+import "./IPerpRewardDistribution.sol";
 import "../staking/LPTokenWrapper.sol";
+import "./PerpetualPoolEscrow.sol";
 import "../staking/StakingWhitelist.sol";
-import "./PoolEscrow.sol";
 
-contract TokenRewards is LPTokenWrapper, IRewardDistributionRecipient, StakingWhitelistable {
+contract PerpetualTokenRewards is LPTokenWrapper, IPerpRewardDistribution, StakingWhitelistable {
     IERC20 public snx;
     uint256 public constant DURATION = 14 days;
 
@@ -71,7 +71,7 @@ contract TokenRewards is LPTokenWrapper, IRewardDistributionRecipient, StakingWh
 
     // returns the earned amount as it will be paid out by the escrow (accounting for rebases)
     function earnedTokens(address account) public view returns (uint256) {
-        return PoolEscrow(escrow).getTokenNumber(
+        return PerpetualPoolEscrow(escrow).getTokenNumber(
             balanceOf(account)
                 .mul(rewardPerToken().sub(userRewardPerTokenPaid[account]))
                 .div(1e18)
@@ -85,14 +85,14 @@ contract TokenRewards is LPTokenWrapper, IRewardDistributionRecipient, StakingWh
         require(amount > 0, "Cannot stake 0");
         super.stake(amount, duration);
         emit Staked(msg.sender, amount);
-        rewardDistribution.notifyStaked(msg.sender, amount);
+        notifier.notifyStaked(msg.sender, amount);
     }
 
     function withdraw(uint256 amount) public updateReward(msg.sender) {
         require(amount > 0, "Cannot withdraw 0");
         super.withdraw(amount);
         emit Withdrawn(msg.sender, amount);
-        rewardDistribution.notifyWithdrawn(msg.sender, amount);
+        notifier.notifyWithdrawn(msg.sender, amount);
     }
 
     function exit() external {
@@ -107,7 +107,7 @@ contract TokenRewards is LPTokenWrapper, IRewardDistributionRecipient, StakingWh
             // the pool is distributing placeholder tokens with fixed supply
             snx.safeApprove(escrow, 0);
             snx.safeApprove(escrow, reward);
-            PoolEscrow(escrow).release(msg.sender, reward);
+            PerpetualPoolEscrow(escrow).release(msg.sender, reward);
             emit RewardPaid(msg.sender, reward);
         }
     }
@@ -137,15 +137,14 @@ contract TokenRewards is LPTokenWrapper, IRewardDistributionRecipient, StakingWh
         escrow = newEscrow;
     }
 
+    function setStatus(bool status) external onlyOwner {
+        onlyWhitelisted = status;
+    }
     function whitelistAddress(address target) external onlyOwner {
         _whitelistAccount(target);
     }
 
     function delistAddress(address target) external onlyOwner {
         _delistAccount(target);
-    }
-
-    function setStatus(bool status) external onlyOwner {
-        onlyWhitelisted = status;
     }
 }

@@ -2,13 +2,13 @@ pragma solidity ^0.5.0;
 
 import "../openzeppelin/SafeMath.sol";
 import "../openzeppelin/SafeERC20.sol";
-import "./TokenRewards.sol";
+import "./PerpetualTokenRewards.sol";
 import "../interfaces/ITaxManagerOld.sol";
 import "../interfaces/INFTFactoryOld.sol";
 import "../interfaces/IReferralHandlerOld.sol";
 import "../interfaces/IETF.sol";
 
-contract PoolEscrow {
+contract PerpetualPoolEscrow {
 
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
@@ -71,7 +71,7 @@ contract PoolEscrow {
     function notifySecondaryTokens(uint256 amount) external {
         IETF(token).transferFrom(msg.sender, address(this), amount);
         IERC20Mintable(shareToken).mint(pool, amount);
-        TokenRewards(pool).notifyRewardAmount(amount);
+        PerpetualTokenRewards(pool).notifyRewardAmount(amount);
     }
 
     function distributeTaxAndReward(address owner, uint256 currentClaimable, uint256 protocolTaxRate, uint256 taxDivisor) internal {
@@ -94,7 +94,7 @@ contract PoolEscrow {
         address perpetualPool = taxManager.getPerpetualPool();
         IERC20(token).safeApprove(perpetualPool, 0);
         IERC20(token).safeApprove(perpetualPool, perpetualAmount);
-        PoolEscrow(perpetualPool).notifySecondaryTokens(perpetualAmount);
+        PerpetualPoolEscrow(perpetualPool).notifySecondaryTokens(perpetualAmount);
         }
         // Block Scoping to reduce local Variables spillage
         {

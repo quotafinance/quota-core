@@ -2,8 +2,8 @@ pragma solidity ^0.5.0;
 
 import "../openzeppelin/Math.sol";
 import "../initialStaking/IRewardDistributionRecipient.sol";
-import "../initialStaking/LPTokenWrapper.sol";
-import "../initialStaking/StakingWhitelist.sol";
+import "../staking/LPTokenWrapper.sol";
+import "../staking/StakingWhitelist.sol";
 import "../initialStaking/PoolEscrow.sol";
 
 contract TokenRewardsDuration is LPTokenWrapper, IRewardDistributionRecipient, StakingWhitelistable {
