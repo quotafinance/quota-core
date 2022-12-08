@@ -7,6 +7,7 @@ import "./interfaces/IRebaserNew.sol";
 import "./interfaces/IETFNew.sol";
 import "./interfaces/ITaxManager.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+
 contract Rewarder {
     using SafeMath for uint256;
     uint256 public BASE = 1e18;

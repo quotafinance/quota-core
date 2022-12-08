@@ -12,7 +12,7 @@ interface ITaxManager {
     function getMarketingPool() external view returns (address);
     function getRevenuePool() external view returns (address);
 
-    function getSelfTaxRate() external returns (uint256);
+    function getSelfTaxRate() external view returns (uint256);
     function getRightUpTaxRate() external view returns (uint256);
     function getMaintenanceTaxRate() external view returns (uint256);
     function getProtocolTaxRate() external view returns (uint256);

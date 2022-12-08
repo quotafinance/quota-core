@@ -12,4 +12,5 @@ interface INFTFactory {
     function getRebaser() external view returns(address);
     function getRewarder() external view returns(address);
     function getHandlerForUser(address) external view returns (address);
+    function getDepositBox(uint256) external view returns (address);
 }

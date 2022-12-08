@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 import "./interfaces/IReferralHandler.sol";
-import "./interfaces/ICrytical.sol";
+import "./interfaces/IETFNew.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./interfaces/IStakingPoolAggregator.sol";
 
