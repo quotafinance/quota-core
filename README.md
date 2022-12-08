@@ -1,6 +1,6 @@
-# Basic Sample Hardhat Project
+# Quota Network
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts.
+This repository contains the core smart contracts required for the operation of Quota Network. The repository uses Hardhat as development environment for compilation, testing and deployment tasks.
 
 Try running some of the following tasks:
 
