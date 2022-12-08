@@ -1,0 +1,42 @@
+import "../initialStaking/EscrowToken.sol";
+import "./TokenRewardsDuration.sol";
+
+pragma solidity 0.5.16;
+
+contract StakingFactoryDuration {
+
+    address public token;
+    address public nftFactory;
+    INotifier public notifier;
+    address public owner;
+    modifier onlyOwner() {
+        require(msg.sender == owner, "caller is not the owner");
+        _;
+    }
+
+    address[] pools;
+
+    constructor(address _token, INotifier _notifier, address _nftFactory) public {
+        token = _token;
+        nftFactory = _nftFactory;
+        notifier = _notifier;
+        owner = msg.sender;
+    }
+
+    function initialize (address lp, uint256 amount, uint256 duration) public {
+        address escrowToken = address(new EscrowToken(amount));
+        address stakingPool = address(new TokenRewardsDuration(escrowToken, lp, duration));
+        pools.push(stakingPool);
+        IERC20(escrowToken).transfer(stakingPool, amount);
+        address poolEscrow = address(new PoolEscrow(escrowToken, stakingPool, token, nftFactory));
+        TokenRewards(stakingPool).setEscrow(poolEscrow);
+        TokenRewards(stakingPool).setRewardDistribution(notifier);
+        TokenRewards(stakingPool).transferOwnership(owner);
+        PoolEscrow(poolEscrow).setGovernance(owner);
+    }
+
+    function getPools() public view returns(address[] memory) {
+        return pools;
+    }
+
+}
