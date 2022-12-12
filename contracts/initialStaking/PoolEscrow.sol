@@ -46,6 +46,12 @@ contract PoolEscrow {
         factory = account;
     }
 
+    function recoverLeftoverTokens(uint256 _token, address benefactor) public onlyGov
+    {
+        uint256 leftOverBalance = IERC20(_token).balanceOf(address(this));
+        IERC20(_token).transfer(benefactor, leftOverBalance);
+    }
+
     function release(address recipient, uint256 shareAmount) external {
         require(msg.sender == pool, "only pool can release tokens");
         IERC20(shareToken).safeTransferFrom(msg.sender, address(this), shareAmount);

@@ -68,6 +68,12 @@ contract RewardSplitter {
         }
     }
 
+    function recoverLeftoverTokens(uint256 _token, address benefactor) public onlyGov
+    {
+        uint256 leftOverBalance = IERC20(_token).balanceOf(address(this));
+        IERC20(_token).transfer(benefactor, leftOverBalance);
+    }
+
     function setGovernance(address account) external onlyGov {
         governance = account;
     }
