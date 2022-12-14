@@ -1,9 +1,9 @@
 pragma solidity 0.5.16;
 
-import "../openzeppelin/IERC20.sol";
-import "../openzeppelin/SafeMath.sol";
-import "../openzeppelin/Address.sol";
-import "../openzeppelin//SafeERC20.sol";
+import "./openzeppelin/IERC20.sol";
+import "./openzeppelin/SafeMath.sol";
+import "./openzeppelin/Address.sol";
+import "./openzeppelin//SafeERC20.sol";
 
 contract Escrow {
 
