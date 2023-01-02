@@ -18,10 +18,10 @@ contract WeeklyDistributionManager {
     bool public usersFiltered = false;
     address[] public pools;
     address[] public distributors;
-    address nftAddress;
-    address factory;
-    uint256 nextRewardEpoch = 0;
-    uint256 rewardFrequency = 7 days;
+    address public nftAddress;
+    address public factory;
+    uint256 public nextRewardEpoch = 0;
+    uint256 public rewardFrequency = 7 days;
 
     modifier onlyAdmin() { // Change this to a list with ROLE library
         require(msg.sender == admin, "only admin");
