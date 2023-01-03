@@ -17,8 +17,11 @@ contract DepositBox {
     uint256 public nftID;
     IReferralHandler public handler;
     IETF public token;
+    bool public initialized = false;
 
     function initialize(address _handler, uint256 _nftID, address _token) public {
+        require(!initialized, "Already initialized");
+        initialized = true;
         factory = msg.sender;
         handler = IReferralHandler(_handler);
         nftID = _nftID;

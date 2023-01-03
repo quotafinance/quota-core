@@ -29,13 +29,14 @@ contract ReferralHandler {
     address public depositBox;
     uint256 private tier;
     bool private canLevel;
-    uint256 claimedEpoch; // Contructor sets the latest positive Epoch, to keep count of future epochs that need to be claimed
+    uint256 public claimedEpoch; // Contructor sets the latest positive Epoch, to keep count of future epochs that need to be claimed
     // NFT addresses of those referred by this NFT and its subordinates
     address[] public firstLevelAddress;
     address[] public secondLevelAddress;
     address[] public thirdLevelAddress;
     address[] public fourthLevelAddress;
     uint256 public BASE;
+    bool public initialized = false;
     // Mapping of the above Address list and their corresponding NFT tiers
     mapping (address => uint256) public first_level;
     mapping (address => uint256) public second_level;
@@ -70,6 +71,8 @@ contract ReferralHandler {
         address _nftAddress,
         uint256 _nftId
     ) public {
+        require(!initialized, "Already initialized");
+        initialized = true;
         admin = _admin;
         claimedEpoch = _epoch;
         token = IETF(_token);
