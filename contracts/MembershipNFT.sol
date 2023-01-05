@@ -19,7 +19,7 @@ contract MembershipNFT is ERC721URIStorage {
         _;
     }
 
-    constructor(address _factory) ERC721("ETF Membership NFT", "ETFNFT") {
+    constructor(address _factory) ERC721("Quota Membership NFT", "QuotaNFT") {
         admin = msg.sender;
         factory = _factory;
         _tokenIds.increment(); // Start Token IDs from 1 instead of 0

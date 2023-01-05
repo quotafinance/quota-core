@@ -48,6 +48,11 @@ contract ReferralHandler {
         _;
     }
 
+    modifier onlyProtocol() {
+        require(msg.sender == admin || msg.sender == factory, "only admin");
+        _;
+    }
+
     modifier onlyOwner() {
         require(msg.sender == ownedBy(), "only owner");
         _;
@@ -232,7 +237,7 @@ contract ReferralHandler {
         return tierCounts;
     }
 
-    function setTier(uint256 _tier) public onlyAdmin {
+    function setTier(uint256 _tier) public onlyProtocol {
         require( _tier >= 0 && _tier < 5, "Invalid depth");
         uint256 oldTier = getTier(); // For events
         tier = _tier.add(1); // Adding the default +1 offset stored in handlers

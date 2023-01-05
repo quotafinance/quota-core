@@ -107,4 +107,6 @@ contract TokenStorage {
   address public router;
 
   address public factory;
+
+  address public dexPair;
 }
