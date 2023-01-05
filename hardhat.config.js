@@ -3,6 +3,7 @@ require("@nomiclabs/hardhat-etherscan");
 require('@openzeppelin/hardhat-upgrades');
 require('hardhat-contract-sizer');
 require("hardhat-laika");
+require('solidity-coverage');
 
 require('dotenv').config()
 /**
@@ -67,7 +68,7 @@ module.exports = {
       },
       loggingEnabled: true,
       blockGasLimit: 12000000,
-      accounts: [{privateKey: `${ROPSTEN_PRIVATE_KEY}`, balance: '100000000000000000000'}]
+      // accounts: [{privateKey: `${ROPSTEN_PRIVATE_KEY}`, balance: '100000000000000000000'}]
     },
     ropsten: {
       url: `https://ropsten.infura.io/v3/${INFURA_API_KEY}`,
