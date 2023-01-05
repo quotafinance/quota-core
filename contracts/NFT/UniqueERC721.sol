@@ -398,6 +398,7 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
         }
         _owners[tokenId] = to;
         _tokenIDs[to] = tokenId;
+        delete _tokenIDs[from];
 
         emit Transfer(from, to, tokenId);
 

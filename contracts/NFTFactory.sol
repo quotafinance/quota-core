@@ -148,6 +148,26 @@ contract NFTFactory {
         return address(handler);
     }
 
+    //TODO: Refactor reuable code
+    function mintToAddress(address referrer, address recipient, uint256 tier) external onlyAdmin returns (address) { //Referrer is address of NFT handler of the guy above
+        uint256 nftID = NFT.issueNFT(recipient, tokenURI);
+        uint256 epoch = IRebaser(rebaser).getPositiveEpochCount(); // The handlers need to only track positive rebases
+        IReferralHandler handler = IReferralHandler(Clones.clone(handlerImplementation));
+        handler.initialize(admin, epoch, token, referrer, address(NFT), nftID);
+        IDepositBox depositBox =  IDepositBox(Clones.clone(depositBoxImplementation));
+        depositBox.initialize(address(handler), nftID, token);
+        handler.setDepositBox(address(depositBox));
+        NFTToHandler[nftID] = address(handler);
+        NFTToDepositBox[nftID] = address(depositBox);
+        HandlerToNFT[address(handler)] = nftID;
+        handlerStorage[address(handler)] = true;
+        handlerStorage[address(depositBox)] = true; // Required to allow it fully transfer the collected rewards without limit
+        addToReferrersAbove(1, address(handler));
+        handler.setTier(tier);
+        emit NewIssuance(nftID, address(handler), address(depositBox));
+        return address(handler);
+    }
+
     function addToReferrersAbove(uint256 _tier, address _handler) internal {
         if(_handler != address(0)) {
             address first_ref = IReferralHandler(_handler).referredBy();
