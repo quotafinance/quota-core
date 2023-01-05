@@ -9,12 +9,12 @@ describe.only("Fixed Token Reward", function () {
     let user1;
     let user2;
     let user3;
-    let user4;
 
     let maintenancePool;
     let rewardPool;
     let devPool;
     let revenuePool;
+    let perpetualPool;
 
     let erc20;
     let etf;
@@ -52,7 +52,7 @@ describe.only("Fixed Token Reward", function () {
     })
 
     beforeEach(async () => {
-        [owner, alice, bob, maintenancePool, rewardPool, devPool, revenuePool, user1, user2, user3] = await ethers.getSigners();
+        [owner, alice, bob, maintenancePool, rewardPool, devPool, revenuePool, user1, user2, user3, perpetualPool] = await ethers.getSigners();
 
         // mock erc20 token
         erc20 = await erc20_factory.deploy('mock', 'mock', owner.address, 0);
@@ -84,6 +84,9 @@ describe.only("Fixed Token Reward", function () {
         await taxManager.setRewardPoolTaxRate(100);
 
         await taxManager.setRevenuePool(revenuePool.address);
+
+        await taxManager.setPerpetualPool(perpetualPool.address);
+        await taxManager.setPerpetualPoolTaxRate(200);
 
         await taxManager.setDevPool(devPool.address);
         await taxManager.setRightUpTaxRate(1000);
@@ -266,8 +269,9 @@ describe.only("Fixed Token Reward", function () {
 
             const maintenanceRewards = parseEther('10').mul(rewardRate).mul(10).div(parseEther('1')).div(100).mul(1);
             const rewards = parseEther('10').mul(rewardRate).mul(10).div(parseEther('1')).div(100).mul(1);
-            const devRewards = parseEther('10').mul(rewardRate).mul(10).div(parseEther('1')).div(100).mul(9);
-            const revenueRewards = parseEther('10').mul(rewardRate).mul(10).div(parseEther('1')).div(100).mul(9);
+            const devRewards = parseEther('10').mul(rewardRate).mul(10).div(parseEther('1')).div(100).mul(8);
+            const revenueRewards = parseEther('10').mul(rewardRate).mul(10).div(parseEther('1')).div(100).mul(8);
+            const perpetualRewards = parseEther('10').mul(rewardRate).mul(10).div(parseEther('1')).div(100).mul(2);
 
             await time.increase(9);
             await fixedTokenRewarder.getReward();
@@ -276,6 +280,7 @@ describe.only("Fixed Token Reward", function () {
             expect(await etf.balanceOf(rewardPool.address)).eq(rewards);
             expect(await etf.balanceOf(devPool.address)).eq(devRewards);
             expect(await etf.balanceOf(revenuePool.address)).eq(revenueRewards);
+            expect(await etf.balanceOf(perpetualPool.address)).eq(perpetualRewards);
         })
 
         it('should allocate rewards to referrers', async () => {
