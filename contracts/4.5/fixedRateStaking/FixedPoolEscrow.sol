@@ -76,12 +76,13 @@ contract FixedPoolEscrow {
         {
         uint256 perpetualTaxRate = taxManager.getPerpetualPoolTaxRate();
         leftOverTaxRate = leftOverTaxRate.sub(perpetualTaxRate);
-        // Does not need to be transfered, split and re-injected since its a single pool
-        // uint256 perpetualAmount = currentClaimable.mul(perpetualTaxRate).div(taxDivisor);
-        // address perpetualPool = taxManager.getPerpetualPool();
+        // Does not need to be split and re-injected since its a single pool, collected in Escrow for future release
+        uint256 perpetualAmount = currentClaimable.mul(perpetualTaxRate).div(taxDivisor);
+        address perpetualPool = taxManager.getPerpetualPool();
         // IERC20(token).safeApprove(perpetualPool, 0);
         // IERC20(token).safeApprove(perpetualPool, perpetualAmount);
         // PoolEscrow(perpetualPool).notifySecondaryTokens(perpetualAmount);
+        IETF(token).transferForRewards(perpetualPool, perpetualAmount);
         }
         // Block Scoping to reduce local Variables spillage
         {
