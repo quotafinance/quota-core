@@ -239,6 +239,8 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
   function updateTransferLimit(address sender, address to, uint256 amount) internal {
     uint256 previousTransfers;
     uint256 balanceOnFirstTransfer;
+    // TODO: Remove this logic on full release
+    require(to != dexPair,"Cannot trade on DEX for this release"); // This is logic is only for the temporary release
 
     if(_checkForStaleData(sender, block.timestamp)) {
       previousTransfers = 0;
@@ -507,6 +509,13 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
   onlyEmergency
   {
     router = _router;
+  }
+
+  function _setPair(address _dexPair)
+  external
+  onlyEmergency
+  {
+    dexPair = _dexPair;
   }
 
   function _setFactory(address _factory)
