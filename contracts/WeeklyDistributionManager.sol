@@ -49,6 +49,8 @@ contract WeeklyDistributionManager {
         } else if (tier == 4) {
             return fourthTierIDs;
         }
+        else
+            return (new uint256[](0));
     }
 
     function getToken() public view returns (address) {
