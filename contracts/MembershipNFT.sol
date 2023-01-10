@@ -25,14 +25,18 @@ contract MembershipNFT is ERC721URIStorage {
         _;
     }
 
-    function setAdmin(address account) public onlyAdmin {
-        admin = account;
-    }
-
     constructor(address _factory) ERC721("Quota Membership NFT", "QuotaNFT") {
         admin = msg.sender;
         factory = _factory;
         _tokenIds.increment(); // Start Token IDs from 1 instead of 0, we use 0 to indicate absense of NFT on a wallet
+    }
+
+    function setAdmin(address account) public onlyAdmin {
+        admin = account;
+    }
+
+    function setFactory(address account) public onlyAdmin {
+        factory = account;
     }
 
     function issueNFT(address user, string memory tokenURI)

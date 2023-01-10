@@ -48,7 +48,7 @@ contract BasicRebaser {
   address public secondaryPool;
   address public governance;
 
-  uint256 public nextRebase = 0; // Tuesday, November 29, 2022 12:00:00 AM GMT
+  uint256 public nextRebase = 0;
   uint256 public constant REBASE_DELAY = WINDOW_SIZE * 1 hours;
   IUniswapV2Pair public uniswapSyncer;
 

@@ -18,7 +18,6 @@ contract ReferralHandler {
 
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
-    address public admin;
     address public factory;
     IMembershipNFT public NFTContract;
     IETF public token;
@@ -44,12 +43,12 @@ contract ReferralHandler {
     mapping (address => uint256) public fourth_level;
 
     modifier onlyAdmin() {
-        require(msg.sender == admin, "only admin");
+        require(msg.sender == INFTFactory(factory).getAdmin(), "only admin");
         _;
     }
 
     modifier onlyProtocol() {
-        require(msg.sender == admin || msg.sender == factory, "only admin");
+        require(msg.sender == INFTFactory(factory).getAdmin() || msg.sender == factory, "only admin or factory");
         _;
     }
 
@@ -69,7 +68,6 @@ contract ReferralHandler {
     }
 
     function initialize(
-        address _admin,
         uint256 _epoch,
         address _token,
         address _referredBy,
@@ -78,7 +76,6 @@ contract ReferralHandler {
     ) public {
         require(!initialized, "Already initialized");
         initialized = true;
-        admin = _admin;
         claimedEpoch = _epoch;
         token = IETF(_token);
         factory = msg.sender;
@@ -91,8 +88,8 @@ contract ReferralHandler {
         BASE = 10000;
     }
 
-    function setAdmin(address account) public onlyAdmin {
-        admin = account;
+    function setFactory(address account) public onlyAdmin {
+        factory = account;
     }
 
     function ownedBy() public view returns (address) { // Returns the Owner of the NFT coupled with this handler

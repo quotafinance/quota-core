@@ -119,6 +119,7 @@ contract WeeklyDistributionManager {
         }
         usersFiltered = true;
     }
+
     function distributeRewards() public onlyAdmin {
         if(block.timestamp >= nextRewardEpoch) {
             nextRewardEpoch = nextRewardEpoch.add(rewardFrequency);
