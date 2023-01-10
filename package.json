@@ -11,11 +11,12 @@
     "hardhat-deploy": "^0.11.20"
   },
   "dependencies": {
-    "@nomicfoundation/hardhat-network-helpers": "^1.0.6",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.7",
     "@nomiclabs/hardhat-etherscan": "^3.1.0",
     "@openzeppelin/contracts": "^4.7.1",
     "@openzeppelin/hardhat-upgrades": "^1.18.1",
     "dotenv": "^16.0.3",
-    "hardhat-laika": "^0.1.1"
+    "hardhat-laika": "^0.1.1",
+    "solidity-coverage": "^0.8.2"
   }
 }
