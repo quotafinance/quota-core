@@ -42,6 +42,10 @@ contract TaxManager {
         admin = msg.sender;
     }
 
+    function setAdmin(address account) public onlyAdmin {
+        admin = account;
+    }
+
     // Getters and setters for Addresses
 
     function setSelfTaxPool(address _selfTaxPool) external onlyAdmin {

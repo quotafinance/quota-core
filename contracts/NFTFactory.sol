@@ -102,6 +102,10 @@ contract NFTFactory {
         return tierManager;
     }
 
+    function setAdmin(address account) public onlyAdmin {
+        admin = account;
+    }
+
     function setDefaultURI(string memory _tokenURI) onlyAdmin public {
         tokenURI = _tokenURI;
     }

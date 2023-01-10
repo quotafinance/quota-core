@@ -12,11 +12,20 @@ contract EscrowToken is ERC20, ERC20Detailed, ERC20Burnable {
     owner = msg.sender;
     _mint(msg.sender, amount);
   }
+
+  modifier onlyOwner() {
+    require(msg.sender == owner, "only owner");
+    _;
+  }
+
+  function setOwner(address account) public onlyOwner {
+    owner = account;
+  }
+
   function recoverTokens(
     address _token,
     address benefactor
-  ) public {
-    require(owner == msg.sender, "Only Owner");
+  ) public onlyOwner {
     uint256 tokenBalance = IERC20(_token).balanceOf(address(this));
     IERC20(_token).transfer(benefactor, tokenBalance);
   }

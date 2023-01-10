@@ -40,6 +40,10 @@ contract ProtocolOwnedHandler {
         _;
     }
 
+    function setAdmin(address account) public onlyAdmin {
+        admin = account;
+    }
+
     function setPool(address _pool) public onlyAdmin {
         protocolPool = _pool;
     }

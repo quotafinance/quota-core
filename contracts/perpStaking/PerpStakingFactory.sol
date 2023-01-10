@@ -23,6 +23,10 @@ contract PerpStakingFactory {
         owner = msg.sender;
     }
 
+    function setOwner(address account) public onlyOwner {
+        owner = account;
+    }
+
     function initialize (address lp) public {
         address escrowToken = address(new MintableEscrowToken());
         address stakingPool = address(new PerpetualTokenRewards(escrowToken, lp));

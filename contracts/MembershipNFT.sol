@@ -25,6 +25,10 @@ contract MembershipNFT is ERC721URIStorage {
         _;
     }
 
+    function setAdmin(address account) public onlyAdmin {
+        admin = account;
+    }
+
     constructor(address _factory) ERC721("Quota Membership NFT", "QuotaNFT") {
         admin = msg.sender;
         factory = _factory;

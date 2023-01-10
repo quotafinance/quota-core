@@ -23,6 +23,10 @@ contract StakingFactoryDuration {
         owner = msg.sender;
     }
 
+    function setOwner(address account) public onlyOwner {
+        owner = account;
+    }
+
     function initialize (address lp, uint256 amount, uint256 duration) public {
         address escrowToken = address(new EscrowToken(amount));
         address stakingPool = address(new TokenRewardsDuration(escrowToken, lp, duration));

@@ -24,6 +24,10 @@ contract StakingPoolAggregator {
         _;
     }
 
+    function setAdmin(address account) public onlyAdmin {
+        admin = account;
+    }
+
     function getPools() public view returns (address[] memory) {
         return pools;
     }

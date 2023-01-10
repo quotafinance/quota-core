@@ -43,6 +43,10 @@ contract LiquidityExtension {
         _;
     }
 
+    function setAdmin(address account) public onlyAdmin {
+        admin = account;
+    }
+
     function addLiquidity(
         address tokenA,
         address tokenB,

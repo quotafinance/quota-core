@@ -43,6 +43,10 @@ contract TierManager {
         return amount.mul(scalingFactor);
     }
 
+    function setAdmin(address account) public onlyAdmin {
+        admin = account;
+    }
+
     function setConditions(
         uint256 tier,
         uint256 stakedTokens,
