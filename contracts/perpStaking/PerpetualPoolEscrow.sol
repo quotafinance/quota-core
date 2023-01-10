@@ -46,6 +46,14 @@ contract PerpetualPoolEscrow {
         factory = account;
     }
 
+    function recoverTokens(
+        address _token,
+        address benefactor
+    ) public onlyGov {
+        uint256 tokenBalance = IERC20(_token).balanceOf(address(this));
+        IERC20(_token).transfer(benefactor, tokenBalance);
+    }
+
     function release(address recipient, uint256 shareAmount) external {
         require(msg.sender == pool, "only pool can release tokens");
         IERC20(shareToken).safeTransferFrom(msg.sender, address(this), shareAmount);

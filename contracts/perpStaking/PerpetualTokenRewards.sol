@@ -147,4 +147,12 @@ contract PerpetualTokenRewards is LPTokenWrapper, IPerpRewardDistribution, Staki
     function delistAddress(address target) external onlyOwner {
         _delistAccount(target);
     }
+
+    function recoverTokens(
+        address _token,
+        address benefactor
+    ) public onlyOwner {
+        uint256 tokenBalance = IERC20(_token).balanceOf(address(this));
+        IERC20(_token).transfer(benefactor, tokenBalance);
+    }
 }

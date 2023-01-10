@@ -143,7 +143,7 @@ contract ReferralHandler {
     function checkExistenceAndLevel(uint256 depth, address referred) view public returns (uint256) {
         // Checks for existence for the given address in the given depth of the tree
         // Returns 0 if it does not exist, else returns the NFT tier
-        require(depth > 4 && depth < 1, "Invalid depth");
+        require(depth <= 4 && depth >= 1, "Invalid depth");
         require(referred != address(0), "Invalid referred address");
         if (depth == 1) {
             return first_level[referred];

@@ -336,6 +336,13 @@ contract BasicRebaser {
       return (0,0);
     }
   }
+  function recoverTokens(
+    address _token,
+    address benefactor
+  ) public onlyGov {
+    uint256 tokenBalance = IERC20(_token).balanceOf(address(this));
+    IERC20(_token).transfer(benefactor, tokenBalance);
+  }
 
   function getPriceSNP() public view returns (bool, uint256);
   function getPriceETF() public view returns (bool, uint256);

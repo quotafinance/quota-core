@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
+import "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 contract TaxManager {
-
     address public selfTaxPool;
     address public rightUpTaxPool;
     address public maintenancePool;
@@ -32,7 +32,8 @@ contract TaxManager {
     mapping(uint256 => TaxRates) referralRate;
     uint256 public tierPoolRate;
 
-    modifier onlyAdmin() { // Change this to a list with ROLE library
+    modifier onlyAdmin() {
+        // Change this to a list with ROLE library
         require(msg.sender == admin, "only admin");
         _;
     }
@@ -75,7 +76,9 @@ contract TaxManager {
         return devPool;
     }
 
-    function setRewardAllocationPool(address _rewardAllocationPool) external onlyAdmin {
+    function setRewardAllocationPool(
+        address _rewardAllocationPool
+    ) external onlyAdmin {
         rewardAllocationPool = _rewardAllocationPool;
     }
 
@@ -115,7 +118,6 @@ contract TaxManager {
         return revenuePool;
     }
 
-
     // Getters and setters for the Tax Rates
 
     function setSelfTaxRate(uint256 _selfTaxRate) external onlyAdmin {
@@ -134,7 +136,9 @@ contract TaxManager {
         return rightUpTaxRate;
     }
 
-    function setMaintenanceTaxRate(uint256 _maintenanceTaxRate) external onlyAdmin {
+    function setMaintenanceTaxRate(
+        uint256 _maintenanceTaxRate
+    ) external onlyAdmin {
         maintenanceTaxRate = _maintenanceTaxRate;
     }
 
@@ -154,7 +158,9 @@ contract TaxManager {
         return protocolTaxRate + rightUpTaxRate + selfTaxRate;
     }
 
-    function setPerpetualPoolTaxRate(uint256 _perpetualPoolTaxRate) external onlyAdmin {
+    function setPerpetualPoolTaxRate(
+        uint256 _perpetualPoolTaxRate
+    ) external onlyAdmin {
         perpetualPoolTaxRate = _perpetualPoolTaxRate;
     }
 
@@ -166,14 +172,23 @@ contract TaxManager {
         return taxBaseDivisor;
     }
 
-    function setBulkReferralRate(uint256 tier, uint256 first, uint256 second, uint256 third, uint256 fourth) external onlyAdmin {
+    function setBulkReferralRate(
+        uint256 tier,
+        uint256 first,
+        uint256 second,
+        uint256 third,
+        uint256 fourth
+    ) external onlyAdmin {
         referralRate[tier].first = first;
         referralRate[tier].second = second;
         referralRate[tier].third = third;
         referralRate[tier].fourth = fourth;
     }
 
-    function getReferralRate(uint256 depth, uint256 tier) external view returns (uint256) {
+    function getReferralRate(
+        uint256 depth,
+        uint256 tier
+    ) external view returns (uint256) {
         if (depth == 1) {
             return referralRate[tier].first;
         } else if (depth == 2) {
@@ -202,7 +217,6 @@ contract TaxManager {
         return rewardPoolTaxRate;
     }
 
-
     function setTierPoolRate(uint256 _tierPoolRate) external onlyAdmin {
         tierPoolRate = _tierPoolRate;
     }
@@ -219,4 +233,8 @@ contract TaxManager {
         return marketingTaxRate;
     }
 
+    function recoverTokens(address token, address benefactor) public onlyAdmin {
+        uint256 tokenBalance = IERC20(token).balanceOf(address(this));
+        IERC20(token).transfer(benefactor, tokenBalance);
+    }
 }

@@ -134,6 +134,7 @@ contract NFTFactory {
         uint256 nftID = NFT.issueNFT(msg.sender, tokenURI);
         uint256 epoch = IRebaser(rebaser).getPositiveEpochCount(); // The handlers need to only track positive rebases
         IReferralHandler handler = IReferralHandler(Clones.clone(handlerImplementation));
+        // TODO: change the admin to not be static, instead change when NFT factory's admin is changed
         handler.initialize(admin, epoch, token, referrer, address(NFT), nftID);
         IDepositBox depositBox =  IDepositBox(Clones.clone(depositBoxImplementation));
         depositBox.initialize(address(handler), nftID, token);

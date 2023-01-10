@@ -2,6 +2,7 @@ pragma solidity 0.5.16;
 pragma experimental ABIEncoderV2;
 
 import "../openzeppelin/SafeMath.sol";
+import "../openzeppelin/IERC20.sol";
 
 // Original work from Compound: https://github.com/compound-finance/compound-protocol/blob/master/contracts/Governance/GovernorAlpha.sol
 
@@ -714,6 +715,17 @@ contract QUOTAGovernor is GovernorStorage, GovernorEvents {
       abi.encode(newPendingAdmin),
       eta
     );
+  }
+
+  function recoverTokens(address token, address benefactor)
+    public
+  {
+    require(
+      msg.sender == admin,
+      "QUOTAGovernor::recoverTokens: sender must be admin"
+  );
+    uint256 tokenBalance = IERC20(token).balanceOf(address(this));
+    IERC20(token).transfer(benefactor, tokenBalance);
   }
 }
 

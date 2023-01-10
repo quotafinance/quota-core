@@ -62,9 +62,16 @@ contract ERC20Mintable is ERC20, MinterRole {
 
 contract MintableEscrowToken is ERC20, ERC20Detailed, ERC20Burnable, ERC20Mintable {
 
-  constructor() public
-  ERC20Detailed("4.0 Escrow LP", "4.0 ESC", 18)
-  {
-  }
+    constructor() public
+    ERC20Detailed("4.0 Escrow LP", "4.0 ESC", 18)
+    {
+    }
+    function recoverTokens(
+        address _token,
+        address benefactor
+    ) public onlyMinter {
+        uint256 tokenBalance = IERC20(_token).balanceOf(address(this));
+        IERC20(_token).transfer(benefactor, tokenBalance);
+    }
 
 }

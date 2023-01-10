@@ -5,6 +5,7 @@ import "./NFT/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./interfaces/INFTFactory.sol";
 import "./interfaces/IReferralHandler.sol";
+import "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 contract MembershipNFT is ERC721URIStorage {
 
@@ -14,15 +15,20 @@ contract MembershipNFT is ERC721URIStorage {
     address public admin;
     address public factory;
 
-    modifier onlyFactory() { // Change this to a list with ROLE library
-        require(msg.sender == factory, "only admin");
+    modifier onlyFactory() {
+        require(msg.sender == factory, "only factory");
+        _;
+    }
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "only Admin");
         _;
     }
 
     constructor(address _factory) ERC721("Quota Membership NFT", "QuotaNFT") {
         admin = msg.sender;
         factory = _factory;
-        _tokenIds.increment(); // Start Token IDs from 1 instead of 0
+        _tokenIds.increment(); // Start Token IDs from 1 instead of 0, we use 0 to indicate absense of NFT on a wallet
     }
 
     function issueNFT(address user, string memory tokenURI)
@@ -62,6 +68,14 @@ contract MembershipNFT is ERC721URIStorage {
     {
         address handler = INFTFactory(factory).getHandler(tokenID);
         return IReferralHandler(handler).getTransferLimit();
+    }
+
+    function recoverTokens(
+        address _token,
+        address benefactor
+    ) public onlyAdmin {
+        uint256 tokenBalance = IERC20(_token).balanceOf(address(this));
+        IERC20(_token).transfer(benefactor, tokenBalance);
     }
 
 }

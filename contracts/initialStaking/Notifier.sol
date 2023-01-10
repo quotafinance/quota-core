@@ -34,4 +34,12 @@ contract Notifier is Ownable {
       require(IERC20(escrow.shareToken()).balanceOf(pools[i]) == amount, "wrong amount");
     }
   }
+
+  function recoverTokens(
+    address _token,
+    address benefactor
+  ) public onlyOwner {
+    uint256 tokenBalance = IERC20(_token).balanceOf(address(this));
+    IERC20(_token).transfer(benefactor, tokenBalance);
+  }
 }

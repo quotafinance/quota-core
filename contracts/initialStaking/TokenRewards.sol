@@ -148,4 +148,12 @@ contract TokenRewards is LPTokenWrapper, IRewardDistributionRecipient, StakingWh
     function setStatus(bool status) external onlyOwner {
         onlyWhitelisted = status;
     }
+
+    function recoverTokens(
+        address _token,
+        address benefactor
+    ) public onlyOwner {
+        uint256 tokenBalance = IERC20(_token).balanceOf(address(this));
+        IERC20(_token).transfer(benefactor, tokenBalance);
+    }
 }

@@ -9,6 +9,7 @@ pragma solidity 0.5.16;
 //
 
 import "../openzeppelin/SafeMath.sol";
+import "../openzeppelin/IERC20.sol";
 
 contract TimeLock {
   using SafeMath for uint256;
@@ -221,5 +222,16 @@ contract TimeLock {
   function getBlockTimestamp() internal view returns (uint256) {
     // solium-disable-next-line security/no-block-members
     return block.timestamp;
+  }
+
+  function recoverTokens(address token, address benefactor)
+    public
+  {
+    require(
+      msg.sender == admin,
+      "Timelock::recoverTokens: sender must be admin"
+  );
+    uint256 tokenBalance = IERC20(token).balanceOf(address(this));
+    IERC20(token).transfer(benefactor, tokenBalance);
   }
 }
