@@ -91,6 +91,10 @@ contract ReferralHandler {
         BASE = 10000;
     }
 
+    function setAdmin(address account) public onlyAdmin {
+        admin = account;
+    }
+
     function ownedBy() public view returns (address) { // Returns the Owner of the NFT coupled with this handler
         return NFTContract.ownerOf(nftID);
     }
