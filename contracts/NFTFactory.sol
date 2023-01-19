@@ -82,6 +82,12 @@ contract NFTFactory {
         emit RewardClaimed(msg.sender, amount, timestamp);
     }
 
+    function alertDepositClaimed(uint256 amount, uint256 timestamp) external { // All the handlers notify the Factory when the claim referral Reward
+        require(isHandler(msg.sender) == true);
+        emit DepositClaimed(msg.sender, amount, timestamp);
+    }
+
+
     function getRebaser() external view returns(address) {
         return rebaser;  // Get address of the Rebaser contract
     }
@@ -142,7 +148,7 @@ contract NFTFactory {
         uint256 nftID = NFT.issueNFT(msg.sender, tokenURI);
         uint256 epoch = IRebaser(rebaser).getPositiveEpochCount(); // The handlers need to only track positive rebases
         IReferralHandler handler = IReferralHandler(Clones.clone(handlerImplementation));
-        // TODO: change the admin to not be static, instead change when NFT factory's admin is changed
+        require(address(handler) != referrer, "Cannot be its own referrer");
         handler.initialize(epoch, token, referrer, address(NFT), nftID);
         IDepositBox depositBox =  IDepositBox(Clones.clone(depositBoxImplementation));
         depositBox.initialize(address(handler), nftID, token);
@@ -162,6 +168,7 @@ contract NFTFactory {
         uint256 nftID = NFT.issueNFT(recipient, tokenURI);
         uint256 epoch = IRebaser(rebaser).getPositiveEpochCount(); // The handlers need to only track positive rebases
         IReferralHandler handler = IReferralHandler(Clones.clone(handlerImplementation));
+        require(address(handler) != referrer, "Cannot be its own referrer");
         handler.initialize(epoch, token, referrer, address(NFT), nftID);
         IDepositBox depositBox =  IDepositBox(Clones.clone(depositBoxImplementation));
         depositBox.initialize(address(handler), nftID, token);

@@ -66,12 +66,5 @@ contract MintableEscrowToken is ERC20, ERC20Detailed, ERC20Burnable, ERC20Mintab
     ERC20Detailed("4.0 Escrow LP", "4.0 ESC", 18)
     {
     }
-    function recoverTokens(
-        address _token,
-        address benefactor
-    ) public onlyMinter {
-        uint256 tokenBalance = IERC20(_token).balanceOf(address(this));
-        IERC20(_token).transfer(benefactor, tokenBalance);
-    }
 
 }

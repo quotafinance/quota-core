@@ -27,7 +27,7 @@ contract PerpStakingFactory {
         owner = account;
     }
 
-    function initialize (address lp) public {
+    function initialize (address lp) public onlyOwner {
         address escrowToken = address(new MintableEscrowToken());
         address stakingPool = address(new PerpetualTokenRewards(escrowToken, lp));
         pools.push(stakingPool);

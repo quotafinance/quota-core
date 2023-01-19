@@ -27,7 +27,7 @@ contract StakingFactory {
         owner = account;
     }
 
-    function initialize (address lp, uint256 amount) public {
+    function initialize (address lp, uint256 amount) public onlyOwner {
         address escrowToken = address(new EscrowToken(amount));
         address stakingPool = address(new TokenRewards(escrowToken, lp));
         pools.push(stakingPool);

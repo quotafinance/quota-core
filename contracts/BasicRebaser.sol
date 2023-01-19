@@ -18,7 +18,6 @@ contract BasicRebaser {
   event Updated(uint256 snp, uint256 etf);
   event NoUpdateSNP();
   event NoUpdateETF();
-  event NoSecondaryMint();
   event NoRebaseNeeded();
   event StillCold();
   event NotInitialized();
@@ -219,7 +218,7 @@ contract BasicRebaser {
       emit StillCold();
       return;
     }
-    // We want to rebase only at 12:00 UTC and 12 hours later
+    // We want to rebase only at 12:00 UTC and 24 hours later
     if (block.timestamp < nextRebase) {
       return;
     } else {
@@ -311,8 +310,12 @@ contract BasicRebaser {
       uint256 upperLimit = currentSupply.mul(basisBase.add(positiveRebaseLimit)).div(basisBase);
       if(desiredSupply > upperLimit) // Increase expected rebase is above the limit
         desiredSupply = upperLimit;
-      uint256 secondaryPoolBudget = desiredSupply.sub(currentSupply).mul(10).div(100);
-      desiredSupply = desiredSupply.sub(secondaryPoolBudget);
+      uint256 perpetualPoolTax = taxManager.getPerpetualPoolTaxRate();
+      uint256 totalTax = taxManager.getTotalTaxAtMint();
+      uint256 taxDivisor = taxManager.getTaxBaseDivisor();
+      uint256 secondaryPoolBudget = desiredSupply.sub(currentSupply).mul(perpetualPoolTax).div(taxDivisor); // 4.5% to perpetual pool/escrow
+      uint256 totalRewardBudget = desiredSupply.sub(currentSupply).mul(totalTax).div(taxDivisor); // This amount of token will get minted when rewards are claimed and distributed via perpetual pool
+      desiredSupply = desiredSupply.sub(totalRewardBudget);
 
       // Cannot underflow as desiredSupply > currentSupply, the result is positive
       // delta = (desiredSupply / currentSupply) * 100 - 100

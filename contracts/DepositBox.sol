@@ -12,7 +12,6 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 contract DepositBox {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
-    address public admin;
     address public factory;
     uint256 public nftID;
     IReferralHandler public handler;
@@ -57,7 +56,7 @@ contract DepositBox {
         uint256 taxedAmount = currentClaimable.mul(protocolTaxRate).div(taxDivisor);
         uint256 userReward = currentClaimable.sub(taxedAmount);
         token.transferForRewards(owner, userReward);
-        INFTFactory(factory).alertReferralClaimed(userReward, block.timestamp);
+        INFTFactory(factory).alertDepositClaimed(userReward, block.timestamp);
         }
         {
         uint256 perpetualTaxRate = taxManager.getPerpetualPoolTaxRate();

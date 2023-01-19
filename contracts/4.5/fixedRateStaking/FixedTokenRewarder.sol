@@ -46,8 +46,8 @@ contract FixedTokenRewarder {
     }
 
     function rewardRate() public view returns(uint256) {
-        uint256 baseRewardRate = uint256(1e18).div(3.154e11); // 3.154e7 is number of seconds in a year, multiplied by e4 to make it basis point based.
-        return baseRewardRate.mul(yearlyRate);
+        uint256 baseRewardRate = uint256(1e18).mul(yearlyRate).div(3.154e11); // 3.154e7 is number of seconds in a year, multiplied by e4 to make it basis point based.
+        return baseRewardRate;
     }
 
     function stakedDuration(address account) public view returns(uint256) {
@@ -82,6 +82,7 @@ contract FixedTokenRewarder {
         if (staked[msg.sender] > 0) {
             unclaimedRewards[msg.sender] = earned(msg.sender);
         }
+        stakedFromTS[msg.sender] = block.timestamp;
         emit Withdrawn(msg.sender, amount);
         staked[msg.sender] = staked[msg.sender].sub(amount);
         token.transfer(msg.sender, amount);

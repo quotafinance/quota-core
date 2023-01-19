@@ -21,7 +21,6 @@ contract FixedPoolEscrow {
     address public pool;
     address public token;
     address public factory;
-    address public distributor;
     address public governance;
 
     event RewardClaimed(address indexed userNFT, uint256 amount, uint256 time);

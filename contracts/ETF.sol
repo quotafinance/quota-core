@@ -76,7 +76,7 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
     string memory symbol_,
     uint8 decimals_
   )
-  public
+  internal
   {
     require(etfsScalingFactor == 0, "already initialized");
     name = name_;
