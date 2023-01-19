@@ -46,6 +46,7 @@ contract Rewarder {
         );
         address handler = msg.sender;
         address owner = IReferralHandler(handler).ownedBy();
+        INFTFactory(factory).updateUserEpoch(owner, claimedEpoch);
         if (rebaseRate != 0) {
             uint256 blockForRebase = getRebaser(factory)
                 .getBlockForPositiveEpoch(claimedEpoch);

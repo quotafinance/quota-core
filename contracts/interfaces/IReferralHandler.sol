@@ -2,7 +2,7 @@
 pragma solidity 0.8.4;
 
 interface IReferralHandler {
-    function initialize(uint256, address, address, address, uint256) external;
+    function initialize(address, address, address, uint256) external;
     function setTier(uint256 _tier) external;
     function setDepositBox(address) external;
     function checkExistence(uint256, address) external view returns (address);

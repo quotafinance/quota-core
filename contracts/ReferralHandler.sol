@@ -28,7 +28,6 @@ contract ReferralHandler {
     address public depositBox;
     uint256 private tier;
     bool private canLevel;
-    uint256 public claimedEpoch; // Contructor sets the latest positive Epoch, to keep count of future epochs that need to be claimed
     // NFT addresses of those referred by this NFT and its subordinates
     address[] public firstLevelAddress;
     address[] public secondLevelAddress;
@@ -68,7 +67,6 @@ contract ReferralHandler {
     }
 
     function initialize(
-        uint256 _epoch,
         address _token,
         address _referredBy,
         address _nftAddress,
@@ -76,7 +74,6 @@ contract ReferralHandler {
     ) public {
         require(!initialized, "Already initialized");
         initialized = true;
-        claimedEpoch = _epoch;
         token = IETF(_token);
         factory = msg.sender;
         referredBy = _referredBy;
@@ -125,6 +122,7 @@ contract ReferralHandler {
 
     function remainingClaims() public view returns (uint256) {
         uint256 currentEpoch = getRebaser().getPositiveEpochCount();
+        uint256 claimedEpoch = INFTFactory(factory).getEpoch(ownedBy());
         return currentEpoch.sub(claimedEpoch);
     }
 
@@ -270,6 +268,7 @@ contract ReferralHandler {
         uint256 currentEpoch = getRebaser().getPositiveEpochCount();
         uint256 protocolTaxRate = taxManager.getProtocolTaxRate();
         uint256 taxDivisor = taxManager.getTaxBaseDivisor();
+        uint256 claimedEpoch = INFTFactory(factory).getEpoch(ownedBy());
         if (claimedEpoch < currentEpoch) {
             claimedEpoch++;
             IRewarder rewarder = IRewarder(INFTFactory(factory).getRewarder());

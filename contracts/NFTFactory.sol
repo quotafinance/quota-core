@@ -23,6 +23,7 @@ contract NFTFactory {
     mapping(address => uint256) HandlerToNFT;
     mapping(uint256 => address) NFTToDepositBox;
     mapping(address => bool) handlerStorage;
+    mapping(address => uint256) claimedEpoch;
     IMembershipNFT public NFT;
     string public tokenURI;
 
@@ -112,6 +113,10 @@ contract NFTFactory {
         return tierManager;
     }
 
+    function getEpoch(address user) external view returns (uint256) {
+        return claimedEpoch[user];
+    }
+
     function setAdmin(address account) public onlyAdmin {
         admin = account;
     }
@@ -144,12 +149,19 @@ contract NFTFactory {
         tierManager = _tierManager;
     }
 
+    function updateUserEpoch(address user, uint256 epoch) external {
+        require(msg.sender == rewarder);
+        claimedEpoch[user] = epoch;
+    }
+
     function mint(address referrer) external returns (address) { //Referrer is address of NFT handler of the guy above
         uint256 nftID = NFT.issueNFT(msg.sender, tokenURI);
         uint256 epoch = IRebaser(rebaser).getPositiveEpochCount(); // The handlers need to only track positive rebases
         IReferralHandler handler = IReferralHandler(Clones.clone(handlerImplementation));
         require(address(handler) != referrer, "Cannot be its own referrer");
-        handler.initialize(epoch, token, referrer, address(NFT), nftID);
+        handler.initialize(token, referrer, address(NFT), nftID);
+        if(claimedEpoch[msg.sender] == 0)
+            claimedEpoch[msg.sender] = epoch;
         IDepositBox depositBox =  IDepositBox(Clones.clone(depositBoxImplementation));
         depositBox.initialize(address(handler), nftID, token);
         handler.setDepositBox(address(depositBox));
@@ -169,7 +181,9 @@ contract NFTFactory {
         uint256 epoch = IRebaser(rebaser).getPositiveEpochCount(); // The handlers need to only track positive rebases
         IReferralHandler handler = IReferralHandler(Clones.clone(handlerImplementation));
         require(address(handler) != referrer, "Cannot be its own referrer");
-        handler.initialize(epoch, token, referrer, address(NFT), nftID);
+        handler.initialize(token, referrer, address(NFT), nftID);
+        if(claimedEpoch[recipient] == 0)
+            claimedEpoch[recipient] = epoch;
         IDepositBox depositBox =  IDepositBox(Clones.clone(depositBoxImplementation));
         depositBox.initialize(address(handler), nftID, token);
         handler.setDepositBox(address(depositBox));
