@@ -9,6 +9,7 @@ interface INFTFactory {
     function alertSelfTaxClaimed(uint256, uint256) external;
     function alertReferralClaimed(uint256, uint256) external;
     function alertDepositClaimed(uint256, uint256) external;
+    function registerUserEpoch(address) external;
     function updateUserEpoch(address, uint256) external;
     function getTierManager() external view returns(address);
     function getTaxManager() external view returns(address);

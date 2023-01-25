@@ -8,10 +8,9 @@ import "./interfaces/IReferralHandler.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 contract MembershipNFT is ERC721URIStorage {
-
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
-    mapping (uint256 => address) public tokenMinter;
+    mapping(uint256 => address) public tokenMinter;
     address public admin;
     address public factory;
 
@@ -39,11 +38,10 @@ contract MembershipNFT is ERC721URIStorage {
         factory = account;
     }
 
-    function issueNFT(address user, string memory tokenURI)
-        public
-        onlyFactory
-        returns (uint256)
-    {
+    function issueNFT(
+        address user,
+        string memory tokenURI
+    ) public onlyFactory returns (uint256) {
         uint256 newNFTId = _tokenIds.current();
         _mint(user, newNFTId);
         _setTokenURI(newNFTId, tokenURI);
@@ -52,28 +50,28 @@ contract MembershipNFT is ERC721URIStorage {
         return newNFTId;
     }
 
-    function changeURI(uint256 tokenID, string memory tokenURI)
-        public
-    {
+    function changeURI(uint256 tokenID, string memory tokenURI) public {
         address handler = INFTFactory(factory).getHandler(tokenID);
         require(msg.sender == handler, "Only Handler can update Token's URI");
         _setTokenURI(tokenID, tokenURI);
     }
 
-    function tier(uint256 tokenID)
-        public
-        view
-        returns(uint256)
-    {
+    function tier(uint256 tokenID) public view returns (uint256) {
         address handler = INFTFactory(factory).getHandler(tokenID);
         return IReferralHandler(handler).getTier();
     }
 
-    function getTransferLimit(uint256 tokenID)
-        public
-        view
-        returns(uint256)
-    {
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) public virtual override {
+        INFTFactory(factory).registerUserEpoch(to); // Alerting NFT Factory to update incase of new user
+        super.safeTransferFrom(from, to, tokenId, data);
+    }
+
+    function getTransferLimit(uint256 tokenID) public view returns (uint256) {
         address handler = INFTFactory(factory).getHandler(tokenID);
         return IReferralHandler(handler).getTransferLimit();
     }
@@ -85,5 +83,4 @@ contract MembershipNFT is ERC721URIStorage {
         uint256 tokenBalance = IERC20(_token).balanceOf(address(this));
         IERC20(_token).transfer(benefactor, tokenBalance);
     }
-
 }

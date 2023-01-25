@@ -4,7 +4,6 @@ pragma solidity 0.8.4;
 import "./interfaces/IMembershipNFT.sol";
 import "./interfaces/IReferralHandler.sol";
 import "./interfaces/IDepositBox.sol";
-import "./interfaces/ITierManager.sol";
 import "./interfaces/IRebaserNew.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import { Clones } from "@openzeppelin/contracts/proxy/Clones.sol";
@@ -27,11 +26,20 @@ contract NFTFactory {
     IMembershipNFT public NFT;
     string public tokenURI;
 
+    event NewAdmin(address oldAdmin, address newAdmin);
+    event NewURI(string OldTokenURI,string NewTokenURI);
+    event NewRewarder(address oldRewarder, address newRewarder);
+    event NewNFT(address oldNFT, address NewNFT);
+    event NewRebaser(address oldRebaser, address newRebaser);
+    event NewToken(address oldToken, address newToken);
+    event NewTaxManager(address oldTaxManager, address newTaxManager);
+    event NewTierManager(address oldTierManager, address newTierManager);
+
     event NewIssuance(uint256 id, address handler, address depositBox);
     event LevelChange(address handler, uint256 oldTier, uint256 newTier);
     event SelfTaxClaimed(address indexed handler, uint256 amount, uint256 timestamp);
     event RewardClaimed(address indexed handler, uint256 amount, uint256 timestamp);
-    event DepositClaimed(address  indexed handler, uint256 amount, uint256 timestamp);
+    event DepositClaimed(address indexed handler, uint256 amount, uint256 timestamp);
 
     modifier onlyAdmin() { // Change this to a list with ROLE library
         require(msg.sender == admin, "only admin");
@@ -118,35 +126,58 @@ contract NFTFactory {
     }
 
     function setAdmin(address account) public onlyAdmin {
+        address oldAdmin = admin;
         admin = account;
+        emit NewAdmin(oldAdmin, account);
     }
 
     function setDefaultURI(string memory _tokenURI) onlyAdmin public {
+        string memory oldURI = tokenURI;
         tokenURI = _tokenURI;
+        emit NewURI(oldURI, _tokenURI);
     }
 
     function setRewarder(address _rewarder) onlyAdmin public {
+        address oldRewarder = rewarder;
         rewarder = _rewarder;
+        emit NewRewarder(oldRewarder, _rewarder);
     }
 
     function setNFTAddress(address _NFT) onlyAdmin external {
+        address oldNFT = address(NFT);
         NFT = IMembershipNFT(_NFT); // Set address of the NFT contract
+        emit NewNFT(oldNFT, _NFT);
     }
 
     function setRebaser(address _rebaser) onlyAdmin external {
+        address oldRebaser = rebaser;
         rebaser = _rebaser; // Set address of the Rebaser contract
+         emit NewRebaser(oldRebaser, _rebaser);
     }
 
     function setToken(address _token) onlyAdmin external {
+        address oldToken = token;
         token = _token; // Set address of the Token contract
+        emit NewToken(oldToken, _token);
     }
 
     function setTaxManager(address _taxManager) onlyAdmin external {
+        address oldManager = taxManager;
         taxManager = _taxManager;
+        emit NewTaxManager(oldManager, _taxManager);
     }
 
     function setTierManager(address _tierManager) onlyAdmin external {
+        address oldManager = tierManager;
         tierManager = _tierManager;
+        emit NewTierManager(oldManager, _tierManager);
+    }
+
+    function registerUserEpoch(address user) external {
+        require(msg.sender == address(NFT));
+        uint256 epoch = IRebaser(rebaser).getPositiveEpochCount();
+        if(claimedEpoch[user] == 0)
+            claimedEpoch[user] = epoch;
     }
 
     function updateUserEpoch(address user, uint256 epoch) external {
@@ -159,6 +190,7 @@ contract NFTFactory {
         uint256 epoch = IRebaser(rebaser).getPositiveEpochCount(); // The handlers need to only track positive rebases
         IReferralHandler handler = IReferralHandler(Clones.clone(handlerImplementation));
         require(address(handler) != referrer, "Cannot be its own referrer");
+        require(handlerStorage[referrer] == true || referrer == address(0), "Referrer should be a valid handler");
         handler.initialize(token, referrer, address(NFT), nftID);
         if(claimedEpoch[msg.sender] == 0)
             claimedEpoch[msg.sender] = epoch;
@@ -181,6 +213,7 @@ contract NFTFactory {
         uint256 epoch = IRebaser(rebaser).getPositiveEpochCount(); // The handlers need to only track positive rebases
         IReferralHandler handler = IReferralHandler(Clones.clone(handlerImplementation));
         require(address(handler) != referrer, "Cannot be its own referrer");
+        require(handlerStorage[referrer] == true || referrer == address(0), "Referrer should be a valid handler");
         handler.initialize(token, referrer, address(NFT), nftID);
         if(claimedEpoch[recipient] == 0)
             claimedEpoch[recipient] = epoch;

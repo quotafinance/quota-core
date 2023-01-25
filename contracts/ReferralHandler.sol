@@ -33,7 +33,6 @@ contract ReferralHandler {
     address[] public secondLevelAddress;
     address[] public thirdLevelAddress;
     address[] public fourthLevelAddress;
-    uint256 public BASE;
     bool public initialized = false;
     // Mapping of the above Address list and their corresponding NFT tiers
     mapping (address => uint256) public first_level;
@@ -82,7 +81,6 @@ contract ReferralHandler {
         mintTime = block.timestamp;
         tier = 1; // Default tier is 1 instead of 0, since solidity 0 can also mean non-existant, all tiers on contract are + 1
         canLevel = true;
-        BASE = 10000;
     }
 
     function setFactory(address account) public onlyAdmin {
