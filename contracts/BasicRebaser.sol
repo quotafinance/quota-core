@@ -39,7 +39,7 @@ contract BasicRebaser {
   uint256 public epoch = 1;
   uint256 public positiveEpochCount = 0;
   uint256 public positiveRebaseLimit = 700; // 7.0% by default
-  uint256 public negativeRebaseLimit = 350; // 3.5% by default
+  uint256 public negativeRebaseLimit = 200; // 2.0% by default
   uint256 public constant basisBase = 10000; // 100%
   ITaxManager public taxManager;
   mapping (uint256 => uint256) public rebaseBlockNumber;
