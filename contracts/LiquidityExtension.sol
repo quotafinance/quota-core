@@ -101,6 +101,9 @@ contract LiquidityExtension {
             transferDust();
     }
 
+    receive() external payable {
+    }
+
     function transferDust() internal {
         address liquidityProvider = msg.sender;
         payable(liquidityProvider).transfer(address(this).balance);

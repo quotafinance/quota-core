@@ -32,7 +32,7 @@ contract ApyOracle {
     address token,
     uint256 incentive, // amount of token loaded into the contract
     uint256 howManyWeeks,
-    address pool) public view returns (uint256) {
+    address pool) public view returns (uint256) { // Returns results in Szabo
     address[] memory p = new address[](3);
     p[1] = wNative;
     p[2] = usdc;
@@ -69,11 +69,21 @@ contract ApyOracle {
       total = uint256(r0) * 2;
       uint256 singlePriceInWeth = 1e18 * total / unipair.totalSupply();
       address[] memory p = new address[](2);
-    p[0] = wNative;
-    p[1] = usdc;
-    uint256[] memory prices = IUniswapRouterV2(router).getAmountsOut(1e18, p);
-    return prices[1] * singlePriceInWeth / 1e18; // price of single token in USDC
-    } else {
+      p[0] = wNative;
+      p[1] = usdc;
+      uint256[] memory prices = IUniswapRouterV2(router).getAmountsOut(1e18, p);
+      return prices[1] * singlePriceInWeth / 1e18; // price of single token in USDC
+    }
+    else if (unipair.token1() == wNative) {
+      total = uint256(r1) * 2;
+      uint256 singlePriceInWeth = 1e18 * total / unipair.totalSupply();
+      address[] memory p = new address[](2);
+      p[0] = wNative;
+      p[1] = usdc;
+      uint256[] memory prices = IUniswapRouterV2(router).getAmountsOut(1e18, p);
+      return prices[1] * singlePriceInWeth / 1e18; // price of single token in USDC
+    }
+     else {
       total = uint256(r1) * 2;
       address t1 = unipair.token1();
       address[] memory p = new address[](3);
