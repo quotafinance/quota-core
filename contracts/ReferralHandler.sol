@@ -18,7 +18,6 @@ contract ReferralHandler {
 
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
-    address public admin;
     address public factory;
     IMembershipNFT public NFTContract;
     IETF public token;
@@ -29,13 +28,12 @@ contract ReferralHandler {
     address public depositBox;
     uint256 private tier;
     bool private canLevel;
-    uint256 claimedEpoch; // Contructor sets the latest positive Epoch, to keep count of future epochs that need to be claimed
     // NFT addresses of those referred by this NFT and its subordinates
     address[] public firstLevelAddress;
     address[] public secondLevelAddress;
     address[] public thirdLevelAddress;
     address[] public fourthLevelAddress;
-    uint256 public BASE;
+    bool public initialized = false;
     // Mapping of the above Address list and their corresponding NFT tiers
     mapping (address => uint256) public first_level;
     mapping (address => uint256) public second_level;
@@ -43,7 +41,12 @@ contract ReferralHandler {
     mapping (address => uint256) public fourth_level;
 
     modifier onlyAdmin() {
-        require(msg.sender == admin, "only admin");
+        require(msg.sender == INFTFactory(factory).getAdmin(), "only admin");
+        _;
+    }
+
+    modifier onlyProtocol() {
+        require(msg.sender == INFTFactory(factory).getAdmin() || msg.sender == factory, "only admin or factory");
         _;
     }
 
@@ -63,15 +66,13 @@ contract ReferralHandler {
     }
 
     function initialize(
-        address _admin,
-        uint256 _epoch,
         address _token,
         address _referredBy,
         address _nftAddress,
         uint256 _nftId
     ) public {
-        admin = _admin;
-        claimedEpoch = _epoch;
+        require(!initialized, "Already initialized");
+        initialized = true;
         token = IETF(_token);
         factory = msg.sender;
         referredBy = _referredBy;
@@ -80,7 +81,10 @@ contract ReferralHandler {
         mintTime = block.timestamp;
         tier = 1; // Default tier is 1 instead of 0, since solidity 0 can also mean non-existant, all tiers on contract are + 1
         canLevel = true;
-        BASE = 10000;
+    }
+
+    function setFactory(address account) public onlyAdmin {
+        factory = account;
     }
 
     function ownedBy() public view returns (address) { // Returns the Owner of the NFT coupled with this handler
@@ -116,6 +120,7 @@ contract ReferralHandler {
 
     function remainingClaims() public view returns (uint256) {
         uint256 currentEpoch = getRebaser().getPositiveEpochCount();
+        uint256 claimedEpoch = INFTFactory(factory).getEpoch(ownedBy());
         return currentEpoch.sub(claimedEpoch);
     }
 
@@ -135,7 +140,7 @@ contract ReferralHandler {
     function checkExistenceAndLevel(uint256 depth, address referred) view public returns (uint256) {
         // Checks for existence for the given address in the given depth of the tree
         // Returns 0 if it does not exist, else returns the NFT tier
-        require(depth > 4 && depth < 1, "Invalid depth");
+        require(depth <= 4 && depth >= 1, "Invalid depth");
         require(referred != address(0), "Invalid referred address");
         if (depth == 1) {
             return first_level[referred];
@@ -229,7 +234,7 @@ contract ReferralHandler {
         return tierCounts;
     }
 
-    function setTier(uint256 _tier) public onlyAdmin {
+    function setTier(uint256 _tier) public onlyProtocol {
         require( _tier >= 0 && _tier < 5, "Invalid depth");
         uint256 oldTier = getTier(); // For events
         tier = _tier.add(1); // Adding the default +1 offset stored in handlers
@@ -261,6 +266,7 @@ contract ReferralHandler {
         uint256 currentEpoch = getRebaser().getPositiveEpochCount();
         uint256 protocolTaxRate = taxManager.getProtocolTaxRate();
         uint256 taxDivisor = taxManager.getTaxBaseDivisor();
+        uint256 claimedEpoch = INFTFactory(factory).getEpoch(ownedBy());
         if (claimedEpoch < currentEpoch) {
             claimedEpoch++;
             IRewarder rewarder = IRewarder(INFTFactory(factory).getRewarder());

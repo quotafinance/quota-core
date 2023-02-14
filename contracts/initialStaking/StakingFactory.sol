@@ -23,7 +23,11 @@ contract StakingFactory {
         owner = msg.sender;
     }
 
-    function initialize (address lp, uint256 amount) public {
+    function setOwner(address account) public onlyOwner {
+        owner = account;
+    }
+
+    function initialize (address lp, uint256 amount) public onlyOwner {
         address escrowToken = address(new EscrowToken(amount));
         address stakingPool = address(new TokenRewards(escrowToken, lp));
         pools.push(stakingPool);
@@ -37,6 +41,14 @@ contract StakingFactory {
 
     function getPools() public view returns(address[] memory) {
         return pools;
+    }
+
+    function recoverTokens(
+        address _token,
+        address benefactor
+    ) public onlyOwner {
+        uint256 tokenBalance = IERC20(_token).balanceOf(address(this));
+        IERC20(_token).transfer(benefactor, tokenBalance);
     }
 
 }

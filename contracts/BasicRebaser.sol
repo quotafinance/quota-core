@@ -18,7 +18,6 @@ contract BasicRebaser {
   event Updated(uint256 snp, uint256 etf);
   event NoUpdateSNP();
   event NoUpdateETF();
-  event NoSecondaryMint();
   event NoRebaseNeeded();
   event StillCold();
   event NotInitialized();
@@ -40,7 +39,7 @@ contract BasicRebaser {
   uint256 public epoch = 1;
   uint256 public positiveEpochCount = 0;
   uint256 public positiveRebaseLimit = 700; // 7.0% by default
-  uint256 public negativeRebaseLimit = 350; // 3.5% by default
+  uint256 public negativeRebaseLimit = 200; // 2.0% by default
   uint256 public constant basisBase = 10000; // 100%
   ITaxManager public taxManager;
   mapping (uint256 => uint256) public rebaseBlockNumber;
@@ -48,7 +47,7 @@ contract BasicRebaser {
   address public secondaryPool;
   address public governance;
 
-  uint256 public nextRebase = 0; // Tuesday, November 29, 2022 12:00:00 AM GMT
+  uint256 public nextRebase = 0;
   uint256 public constant REBASE_DELAY = WINDOW_SIZE * 1 hours;
   IUniswapV2Pair public uniswapSyncer;
 
@@ -219,7 +218,7 @@ contract BasicRebaser {
       emit StillCold();
       return;
     }
-    // We want to rebase only at 12:00 UTC and 12 hours later
+    // We want to rebase only at 12:00 UTC and 24 hours later
     if (block.timestamp < nextRebase) {
       return;
     } else {
@@ -311,8 +310,12 @@ contract BasicRebaser {
       uint256 upperLimit = currentSupply.mul(basisBase.add(positiveRebaseLimit)).div(basisBase);
       if(desiredSupply > upperLimit) // Increase expected rebase is above the limit
         desiredSupply = upperLimit;
-      uint256 secondaryPoolBudget = desiredSupply.sub(currentSupply).mul(10).div(100);
-      desiredSupply = desiredSupply.sub(secondaryPoolBudget);
+      uint256 perpetualPoolTax = taxManager.getPerpetualPoolTaxRate();
+      uint256 totalTax = taxManager.getTotalTaxAtMint();
+      uint256 taxDivisor = taxManager.getTaxBaseDivisor();
+      uint256 secondaryPoolBudget = desiredSupply.sub(currentSupply).mul(perpetualPoolTax).div(taxDivisor); // 4.5% to perpetual pool/escrow
+      uint256 totalRewardBudget = desiredSupply.sub(currentSupply).mul(totalTax).div(taxDivisor); // This amount of token will get minted when rewards are claimed and distributed via perpetual pool
+      desiredSupply = desiredSupply.sub(totalRewardBudget);
 
       // Cannot underflow as desiredSupply > currentSupply, the result is positive
       // delta = (desiredSupply / currentSupply) * 100 - 100
@@ -335,6 +338,13 @@ contract BasicRebaser {
     } else {
       return (0,0);
     }
+  }
+  function recoverTokens(
+    address _token,
+    address benefactor
+  ) public onlyGov {
+    uint256 tokenBalance = IERC20(_token).balanceOf(address(this));
+    IERC20(_token).transfer(benefactor, tokenBalance);
   }
 
   function getPriceSNP() public view returns (bool, uint256);

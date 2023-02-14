@@ -43,6 +43,10 @@ contract LiquidityExtension {
         _;
     }
 
+    function setAdmin(address account) public onlyAdmin {
+        admin = account;
+    }
+
     function addLiquidity(
         address tokenA,
         address tokenB,
@@ -95,6 +99,9 @@ contract LiquidityExtension {
         IERC20(token).transfer(msg.sender, balance);
         if (msg.value > amountETH)
             transferDust();
+    }
+
+    receive() external payable {
     }
 
     function transferDust() internal {

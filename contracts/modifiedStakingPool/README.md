@@ -1,0 +1,1 @@
+These contracts are clones of the contracts from intial staking pool with the additional feature of allowing the duration of the pool to be customized when it is intialized.

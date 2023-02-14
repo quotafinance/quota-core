@@ -25,8 +25,10 @@ contract UniswapOracle {
   }
 
   function getPriceETF() public view returns (bool, uint256) {
-    // returns the price with 6 decimals, but we want 18
     uint256[] memory amounts = IUniswapRouterV2(router).getAmountsOut(1e18, path);
-    return (etf != address(0), amounts[2].mul(1e12));
+    // returns the price with 6 decimals on eth and polygon mainnet, but we want 18
+    // return (etf != address(0), amounts[2].mul(1e12));
+    // On BSC it is 18 decimals, since USDC is 18 decimals
+    return (etf != address(0), amounts[2]);
   }
 }

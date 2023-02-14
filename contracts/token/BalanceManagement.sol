@@ -61,7 +61,7 @@ contract BalanceManagement is TokenInterface {
         view
         returns (uint256)
     {
-        require(blockNumber < block.number, "LIFE::getPriorBalance: not yet determined");
+        require(blockNumber < block.number, "ETF::getPriorBalance: not yet determined");
 
         uint32 nCheckpoints = numCheckpoints[account];
         if (nCheckpoints == 0) {
@@ -132,7 +132,7 @@ contract BalanceManagement is TokenInterface {
     )
         internal
     {
-        uint32 blockNumber = safe32(block.number, "LIFE::_writeCheckpoint: block number exceeds 32 bits");
+        uint32 blockNumber = safe32(block.number, "ETF::_writeCheckpoint: block number exceeds 32 bits");
 
         if (nCheckpoints > 0 && checkpoints[delegatee][nCheckpoints - 1].fromBlock == blockNumber) {
             checkpoints[delegatee][nCheckpoints - 1].balance = newBalance;

@@ -10,8 +10,6 @@ interface INotifier {
 contract IRewardDistributionRecipient is Ownable {
     INotifier public rewardDistribution;
 
-    function notifyRewardAmount(uint256 reward) external;
-
     modifier onlyRewardDistribution() {
         require(_msgSender() == address(rewardDistribution), "Caller is not reward distribution");
         _;

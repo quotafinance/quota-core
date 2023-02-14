@@ -62,9 +62,9 @@ contract ERC20Mintable is ERC20, MinterRole {
 
 contract MintableEscrowToken is ERC20, ERC20Detailed, ERC20Burnable, ERC20Mintable {
 
-  constructor() public
-  ERC20Detailed("4.0 Escrow LP", "4.0 ESC", 18)
-  {
-  }
+    constructor() public
+    ERC20Detailed("4.0 Escrow LP", "4.0 ESC", 18)
+    {
+    }
 
 }

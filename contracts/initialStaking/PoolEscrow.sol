@@ -22,7 +22,6 @@ contract PoolEscrow {
     address public pool;
     address public token;
     address public factory;
-    address public distributor;
     address public governance;
 
     event RewardClaimed(address indexed userNFT, uint256 amount, uint256 time);
@@ -44,6 +43,14 @@ contract PoolEscrow {
 
     function setFactory(address account) external onlyGov {
         factory = account;
+    }
+
+    function recoverTokens(
+        address _token,
+        address benefactor
+    ) public onlyGov {
+        uint256 tokenBalance = IERC20(_token).balanceOf(address(this));
+        IERC20(_token).transfer(benefactor, tokenBalance);
     }
 
     function release(address recipient, uint256 shareAmount) external {

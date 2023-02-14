@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity 0.5.16;
 
-import "../openzeppelin/SafeMath.sol";
+import "../../openzeppelin/SafeMath.sol";
 
 contract TokenStorage {
-
   using SafeMath for uint256;
 
   /**
@@ -24,11 +22,6 @@ contract TokenStorage {
   uint8 public decimals;
 
   /**
-   * @notice NFT contract that decides transfer limits for this token
-   */
-  address public NFT;
-
-  /**
    * @notice Governor for this contract
    */
   address public gov;
@@ -39,9 +32,9 @@ contract TokenStorage {
   address public pendingGov;
 
   /**
-   * @notice Approved rebaser for this contract
+   * @notice Approved token emitter for this contract
    */
-  address public rebaser;
+  address public emission;
 
   /**
    * @notice Approved token guardian for this contract
@@ -49,10 +42,9 @@ contract TokenStorage {
   address public guardian;
 
   /**
-   * @notice Total supply of ETF
+   * @notice Total supply of SRVN
    */
   uint256 public totalSupply;
-
 
   /**
    * @notice Used for pausing and unpausing
@@ -72,41 +64,13 @@ contract TokenStorage {
   uint256 public freezeDelay = 14 days; // Delay between freezing the same target multiple times to avoid abuse
 
   /**
-   * @notice Internal decimals used to handle scaling factor
+   * @notice Used for balance of the users and allowances
    */
-  uint256 public constant internalDecimals = 10 ** 24;
+  mapping(address => uint256) internal _balances;
 
-  /**
-   * @notice Used for percentage maths
-   */
-  uint256 public constant BASE = 10 ** 18;
+  mapping(address => mapping(address => uint256)) internal _allowedBalances;
 
-  /**
-   * @notice Scaling factor that adjusts everyone's balances
-   */
-  uint256 public etfsScalingFactor;
+  bool public initialized = false;
 
-  mapping(address => uint256) internal _etfBalances;
-
-  mapping(address => mapping(address => uint256)) internal _allowedFragments;
-
-  /**
-   * @notice Used for storing 24hr transfer data of users
-   */
-  mapping(address => uint256) public lastTransferTime;
-
-  mapping(address => uint256) public totalTrackedTransfer;
-
-  mapping(address => uint256) public balanceDuringCheckpoint;
-
-  /**
-   * @notice Initial supply
-   */
-  uint256 public initSupply;
-
-  address public router;
-
-  address public factory;
-
-  address public dexPair;
+  uint256 public currentSupply;
 }

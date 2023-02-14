@@ -23,7 +23,11 @@ contract PerpStakingFactory {
         owner = msg.sender;
     }
 
-    function initialize (address lp) public {
+    function setOwner(address account) public onlyOwner {
+        owner = account;
+    }
+
+    function initialize (address lp) public onlyOwner {
         address escrowToken = address(new MintableEscrowToken());
         address stakingPool = address(new PerpetualTokenRewards(escrowToken, lp));
         pools.push(stakingPool);
@@ -39,6 +43,14 @@ contract PerpStakingFactory {
     function getPools() public view returns(address[] memory) {
         return pools;
     }
+
+    // function recoverTokens(
+    //     address _token,
+    //     address benefactor
+    // ) public onlyOwner {
+    //     uint256 tokenBalance = IERC20(_token).balanceOf(address(this));
+    //     IERC20(_token).transfer(benefactor, tokenBalance);
+    // }
 
 }
 

@@ -5,6 +5,7 @@ import "./interfaces/ITaxManager.sol";
 import "./interfaces/IRebaserNew.sol";
 import "./interfaces/IETFNew.sol";
 import "./interfaces/INFTFactory.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 contract StakingEscrowHandler {
 
@@ -29,6 +30,20 @@ contract StakingEscrowHandler {
         rebaser = IRebaser(_rebaser);
         token = IETF(_token);
         factory = _factory;
+    }
+
+    modifier onlyAdmin() { // Change this to a list with ROLE library
+        require(msg.sender == admin, "only admin");
+        _;
+    }
+
+    function recoverTokens(address _token, address benefactor) public onlyAdmin {
+        uint256 tokenBalance = IERC20(_token).balanceOf(address(this));
+        IERC20(_token).transfer(benefactor, tokenBalance);
+    }
+
+    function setAdmin(address account) public onlyAdmin {
+        admin = account;
     }
 
     function transferTax() external {

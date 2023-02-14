@@ -76,7 +76,7 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
     string memory symbol_,
     uint8 decimals_
   )
-  public
+  internal
   {
     require(etfsScalingFactor == 0, "already initialized");
     name = name_;
@@ -227,7 +227,7 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
     }
     else
       totalTrackedTransfer[sender] = totalTrackedTransfer[sender].add(amount);
-    }
+  }
 
   function _checkForStaleData(address sender, uint256 timestamp) public view returns (bool) {
     if((lastTransferTime[sender] + 24 hours) < timestamp) {
@@ -239,6 +239,9 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
   function updateTransferLimit(address sender, address to, uint256 amount) internal {
     uint256 previousTransfers;
     uint256 balanceOnFirstTransfer;
+    // TODO: Remove this logic on full release
+    // require(to != dexPair,"Cannot trade on DEX for this release"); // This is logic is only for the temporary release
+    // require(sender != dexPair,"Cannot trade on DEX for this release"); // This is logic is only for the temporary release
 
     if(_checkForStaleData(sender, block.timestamp)) {
       previousTransfers = 0;
@@ -507,6 +510,13 @@ contract ETFToken is BalanceManagement, Frozen, Whitelistable, TradePair {
   onlyEmergency
   {
     router = _router;
+  }
+
+  function _setPair(address _dexPair)
+  external
+  onlyEmergency
+  {
+    dexPair = _dexPair;
   }
 
   function _setFactory(address _factory)

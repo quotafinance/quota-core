@@ -1,14 +1,14 @@
-pragma solidity ^0.5.0;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.4;
 
-import "../openzeppelin/SafeMath.sol";
-import "../openzeppelin/SafeERC20.sol";
-import "./PerpetualTokenRewards.sol";
-import "../interfaces/ITaxManagerOld.sol";
-import "../interfaces/INFTFactoryOld.sol";
-import "../interfaces/IReferralHandlerOld.sol";
-import "../interfaces/IETF.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "../../interfaces/ITaxManager.sol";
+import "../../interfaces/INFTFactory.sol";
+import "../../interfaces/IReferralHandler.sol";
+import "../../interfaces/IETFNew.sol";
 
-contract PerpetualPoolEscrow {
+contract FixedPoolEscrow {
 
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
@@ -18,7 +18,6 @@ contract PerpetualPoolEscrow {
         _;
     }
 
-    address public shareToken;
     address public pool;
     address public token;
     address public factory;
@@ -26,11 +25,10 @@ contract PerpetualPoolEscrow {
 
     event RewardClaimed(address indexed userNFT, uint256 amount, uint256 time);
 
-    constructor(address _shareToken,
+    constructor(
         address _pool,
         address _token,
-        address _factory) public {
-        shareToken = _shareToken;
+        address _factory) {
         pool = _pool;
         token = _token;
         factory = _factory;
@@ -45,41 +43,21 @@ contract PerpetualPoolEscrow {
         factory = account;
     }
 
-    function recoverTokens(
-        address _token,
-        address benefactor
-    ) public onlyGov {
-        uint256 tokenBalance = IERC20(_token).balanceOf(address(this));
-        IERC20(_token).transfer(benefactor, tokenBalance);
+    function recoverLeftoverTokens(address _token, address benefactor) public onlyGov
+    {
+        uint256 leftOverBalance = IERC20(_token).balanceOf(address(this));
+        IERC20(_token).transfer(benefactor, leftOverBalance);
     }
 
-    function release(address recipient, uint256 shareAmount) external {
+    function disperseRewards(address recipient, uint256 shareAmount) external {
         require(msg.sender == pool, "only pool can release tokens");
-        IERC20(shareToken).safeTransferFrom(msg.sender, address(this), shareAmount);
-        uint256 reward = getTokenNumber(shareAmount);
+        uint256 reward = shareAmount;
         ITaxManager taxManager = ITaxManager(INFTFactory(factory).getTaxManager());
         uint256 protocolTaxRate = taxManager.getProtocolTaxRate();
         uint256 taxDivisor = taxManager.getTaxBaseDivisor();
         distributeTaxAndReward(recipient, reward, protocolTaxRate, taxDivisor);
-        IERC20Burnable(shareToken).burn(shareAmount);
     }
 
-    function getTokenNumber(uint256 shareAmount) public view returns(uint256) {
-        return IETF(token).balanceOf(address(this))
-            .mul(shareAmount)
-            .div(IERC20(shareToken).totalSupply());
-    }
-
-    /**
-    * Functionality for secondary pool escrow. Transfers Rebasing tokens from msg.sender to this
-    * escrow. It adds equal amount of escrow share token to the staking pool and notifies it to
-    * extend reward period.
-    */
-    function notifySecondaryTokens(uint256 amount) external {
-        IETF(token).transferFrom(msg.sender, address(this), amount);
-        IERC20Mintable(shareToken).mint(pool, amount);
-        PerpetualTokenRewards(pool).notifyRewardAmount(amount);
-    }
 
     function distributeTaxAndReward(address owner, uint256 currentClaimable, uint256 protocolTaxRate, uint256 taxDivisor) internal {
         ITaxManager taxManager = ITaxManager(INFTFactory(factory).getTaxManager());
@@ -96,12 +74,14 @@ contract PerpetualPoolEscrow {
         }
         {
         uint256 perpetualTaxRate = taxManager.getPerpetualPoolTaxRate();
-        uint256 perpetualAmount = currentClaimable.mul(perpetualTaxRate).div(taxDivisor);
         leftOverTaxRate = leftOverTaxRate.sub(perpetualTaxRate);
+        // Does not need to be split and re-injected since its a single pool, collected in Escrow for future release
+        uint256 perpetualAmount = currentClaimable.mul(perpetualTaxRate).div(taxDivisor);
         address perpetualPool = taxManager.getPerpetualPool();
-        IERC20(token).safeApprove(perpetualPool, 0);
-        IERC20(token).safeApprove(perpetualPool, perpetualAmount);
-        PerpetualPoolEscrow(perpetualPool).notifySecondaryTokens(perpetualAmount);
+        // IERC20(token).safeApprove(perpetualPool, 0);
+        // IERC20(token).safeApprove(perpetualPool, perpetualAmount);
+        // PoolEscrow(perpetualPool).notifySecondaryTokens(perpetualAmount);
+        IETF(token).transferForRewards(perpetualPool, perpetualAmount);
         }
         // Block Scoping to reduce local Variables spillage
         {

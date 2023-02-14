@@ -1,1 +1,0 @@
-Ignore these contracts, these were modified for a very specific case and the have read only functions.
